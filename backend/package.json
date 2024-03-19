@@ -22,5 +22,8 @@
     "passport": "^0.7.0",
     "passport-facebook": "^3.0.0",
     "passport-google-oauth2": "^0.2.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0"
   }
 }
