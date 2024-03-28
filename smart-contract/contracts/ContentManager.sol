@@ -206,3 +206,81 @@ contract ContentPlatform is Ownable {
         return (info.period, info.expirationTime);
     }
 }
+
+
+
+
+
+
+
+// SPDX-License-Identifier: MIT
+// pragma solidity ^0.8.0;
+
+// contract ContentManager {
+//     struct Content {
+//         uint256 id;
+//         address creator;
+//         string title;
+//         string description;
+//         uint256 price;
+//         string contentHash; // IPFS content hash
+//         bool isActive;
+//         string contentType; // e.g., "music", "book"
+//         string author; // Author/artist name
+//     }
+
+//     mapping(uint256 => Content) public contents;
+//     uint256 public contentCount;
+
+//     mapping(address => mapping(uint256 => bool)) public purchasedContents;
+
+//     mapping(address => string) public userOffChainAccounts;
+
+//     event ContentUploaded(uint256 indexed contentId, address indexed creator, string title, uint256 price, string contentHash);
+//     event ContentPurchased(uint256 indexed contentId, address indexed buyer);
+
+//     modifier onlyCreator() {
+//         require(bytes(userOffChainAccounts[msg.sender]).length > 0, "User not registered");
+//         _;
+//     }
+
+//     function registerOffChainAccount(string memory offChainAccount) public {
+//         userOffChainAccounts[msg.sender] = offChainAccount;
+//     }
+
+//     function uploadContent(string memory title, string memory description, uint256 price, string memory contentHash, string memory contentType, string memory author) public onlyCreator {
+//         contentCount++;
+//         contents[contentCount] = Content(contentCount, msg.sender, title, description, price, contentHash, true, contentType, author);
+//         emit ContentUploaded(contentCount, msg.sender, title, price, contentHash);
+//     }
+
+//     function purchaseContent(uint256 contentId) public payable {
+//         Content memory content = contents[contentId];
+//         require(content.isActive, "Content is not available for purchase");
+//         require(msg.value >= content.price, "Insufficient funds");
+//         require(!purchasedContents[msg.sender][contentId], "Content already purchased");
+
+//         purchasedContents[msg.sender][contentId] = true;
+//         payable(content.creator).transfer(msg.value);
+
+//         emit ContentPurchased(contentId, msg.sender);
+//     }
+
+//     function getContent(uint256 contentId) public view returns (Content memory) {
+//         return contents[contentId];
+//     }
+
+//     function getOwnedContents(address user) public view returns (uint256[] memory) {
+//         uint256[] memory ownedContentsIds = new uint256[](contentCount);
+//         uint256 count = 0;
+
+//         for (uint256 i = 1; i <= contentCount; i++) {
+//             if (purchasedContents[user][i]) {
+//                 ownedContentsIds[count] = i;
+//                 count++;
+//             }
+//         }
+
+//         return ownedContentsIds;
+//     }
+// }
