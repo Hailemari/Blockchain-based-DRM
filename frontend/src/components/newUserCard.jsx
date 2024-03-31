@@ -1,5 +1,4 @@
-import React from "react";
-
+import PropTypes from "prop-types";
 const UserCard = ({ icon, userType, selectedUserType, setUserType, description }) => {
   const isSelected = selectedUserType === userType;
 
@@ -37,3 +36,12 @@ return (
 };
 
 export default UserCard;
+
+
+UserCard.propTypes = {
+    icon: PropTypes.element.isRequired,
+    userType: PropTypes.string.isRequired,
+    selectedUserType: PropTypes.string.isRequired,
+    setUserType: PropTypes.func.isRequired,
+    description: PropTypes.string.isRequired,
+ };

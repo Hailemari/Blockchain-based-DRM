@@ -1,6 +1,9 @@
+import PropTypes from 'prop-types';
+
 const Alert = ({ message, type }) => {
-        // Define a function to determine the alert's style based on the type
+
         const alertStyle = (type) => {
+
             switch (type) {
                 case 'success':
                     return 'alert-success';
@@ -20,4 +23,9 @@ const Alert = ({ message, type }) => {
     };
     
     export default Alert;
+
+    Alert.propTypes = {
+        message: PropTypes.string.isRequired,
+        type: PropTypes.string.isRequired
+    };
     

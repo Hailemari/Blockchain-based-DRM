@@ -3,7 +3,6 @@ import { FaFacebook } from 'react-icons/fa'
 import { FcGoogle } from 'react-icons/fc'
 import { Link, useNavigate ,useLocation} from 'react-router-dom'
 import { useLoginMutation, useSignupMutation } from '../services/authApi'
-import { useAppDispatch } from '../Hooks/hooks'
 import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai'
 import PropTypes from 'prop-types';
 import Alert from './Alert'
@@ -41,6 +40,14 @@ const initialFormState = {
 }
 
 
+/**
+ * AuthForm component handles the authentication form for user login and registration.
+ * 
+ * @component
+ * @param {Object} props - The component props.
+ * @param {string} props.mode - The mode of the form, either 'register' or 'login'.
+ * @returns {JSX.Element} The rendered AuthForm component.
+ */
 const AuthForm = ({ mode }) => {
   const [formState, setFormState] = useState({ ...initialFormState });
   const [errors, setErrors] = useState({});
@@ -58,13 +65,13 @@ useEffect(() => {
 
   const [
     login,
-    { data: loginData, isSuccess: isLoginSuccess, isErrors: LoginErrors },
+    {  isSuccess: isLoginSuccess, isErrors: LoginErrors },
   ] = useLoginMutation();
   const [signup, { data: registerData }] = useSignupMutation();
 
   
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
+ 
 
   const handleSubmit = useCallback(
     async (e) => {
@@ -123,12 +130,12 @@ useEffect(() => {
             return;
           }
 
-          const result = await signup(formState).unwrap();
-          setAlert({ message: 'Registration successful!', type: 'success' });
-          // after showing the alert, navigate to the login page after 2 seconds
-          setTimeout(() => {
+            await signup(formState).unwrap();
+            setAlert({ message: 'Registration successful!', type: 'success' });
+            // after showing the alert, navigate to the login page after 2 seconds
+            setTimeout(() => {
             navigate('/signin');
-          }, 3000);
+            }, 3000);
         } else {
           await login(formState).unwrap();
           setAlert({ message: 'Login successful!', type: 'success' });
@@ -389,4 +396,5 @@ export default AuthForm
 
 AuthForm.propTypes = {
   mode: PropTypes.string.isRequired,
+  
 };
