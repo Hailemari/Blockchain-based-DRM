@@ -358,7 +358,7 @@ useEffect(() => {
       {mode === 'signin' && (
         <div className="flex justify-end">
           <Link
-            to="/reset-password"
+            to="/request-password-reset"
             className="text-gray-700 hover:underline mt-2 "
           >
             Forgot Password?
@@ -366,11 +366,11 @@ useEffect(() => {
         </div>
       )}
       <div className="flex items-center mt-6">
-        <div className="border-t border-gray-300 w-full"></div>
-        <span className="px-3 text-gray-500">Or</span>
-        <div className="border-t border-gray-300 w-full"></div>
+        <div className="border-t border-gray-300 w-full flex-grow"></div>
+        <span className="px-3 text-gray-500">Or Signin With</span>
+        <div className="border-t border-gray-300 w-full flex-grow"></div>
       </div>
-      <h1 className='mt-5'>Continue With</h1>
+      <h1 className='mt-5'></h1>
 
       <div className="grid grid-cols-2 gap-8 mt-2">
         <button className="flex hover:border items-center border-gray-300 rounded" onClick={() => {}}>

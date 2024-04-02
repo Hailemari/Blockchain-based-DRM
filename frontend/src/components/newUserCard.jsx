@@ -40,8 +40,8 @@ export default UserCard;
 
 UserCard.propTypes = {
     icon: PropTypes.element.isRequired,
-    userType: PropTypes.string.isRequired,
-    selectedUserType: PropTypes.string.isRequired,
+    userType: PropTypes.string,
+    selectedUserType: PropTypes.string,
     setUserType: PropTypes.func.isRequired,
     description: PropTypes.string.isRequired,
  };
