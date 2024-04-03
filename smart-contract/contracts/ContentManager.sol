@@ -213,74 +213,221 @@ contract ContentPlatform is Ownable {
 
 
 
-// SPDX-License-Identifier: MIT
+// // SPDX-License-Identifier: MIT
 // pragma solidity ^0.8.0;
 
-// contract ContentManager {
+// contract ContentPlatform {
 //     struct Content {
 //         uint256 id;
 //         address creator;
 //         string title;
 //         string description;
+//         string ipfsHash;
 //         uint256 price;
-//         string contentHash; // IPFS content hash
 //         bool isActive;
-//         string contentType; // e.g., "music", "book"
-//         string author; // Author/artist name
 //     }
 
 //     mapping(uint256 => Content) public contents;
+//     mapping(address => mapping(uint256 => bool)) public contentPurchases;
 //     uint256 public contentCount;
 
-//     mapping(address => mapping(uint256 => bool)) public purchasedContents;
+//     event ContentCreated(uint256 indexed id, address indexed creator, string title, string description, string ipfsHash, uint256 price);
+//     event ContentPurchased(uint256 indexed id, address indexed buyer, address indexed creator, string ipfsHash, uint256 price);
 
-//     mapping(address => string) public userOffChainAccounts;
-
-//     event ContentUploaded(uint256 indexed contentId, address indexed creator, string title, uint256 price, string contentHash);
-//     event ContentPurchased(uint256 indexed contentId, address indexed buyer);
-
-//     modifier onlyCreator() {
-//         require(bytes(userOffChainAccounts[msg.sender]).length > 0, "User not registered");
+//     modifier onlyCreator(uint256 _id) {
+//         require(contents[_id].creator == msg.sender, "You are not the creator of this content.");
 //         _;
 //     }
 
-//     function registerOffChainAccount(string memory offChainAccount) public {
-//         userOffChainAccounts[msg.sender] = offChainAccount;
-//     }
-
-//     function uploadContent(string memory title, string memory description, uint256 price, string memory contentHash, string memory contentType, string memory author) public onlyCreator {
+//     function createContent(string memory _title, string memory _description, string memory _ipfsHash, uint256 _price) public {
 //         contentCount++;
-//         contents[contentCount] = Content(contentCount, msg.sender, title, description, price, contentHash, true, contentType, author);
-//         emit ContentUploaded(contentCount, msg.sender, title, price, contentHash);
+//         contents[contentCount] = Content(contentCount, msg.sender, _title, _description, _ipfsHash, _price, true);
+//         emit ContentCreated(contentCount, msg.sender, _title, _description, _ipfsHash, _price);
 //     }
 
-//     function purchaseContent(uint256 contentId) public payable {
-//         Content memory content = contents[contentId];
-//         require(content.isActive, "Content is not available for purchase");
-//         require(msg.value >= content.price, "Insufficient funds");
-//         require(!purchasedContents[msg.sender][contentId], "Content already purchased");
-
-//         purchasedContents[msg.sender][contentId] = true;
-//         payable(content.creator).transfer(msg.value);
-
-//         emit ContentPurchased(contentId, msg.sender);
+//     function updateContent(uint256 _id, string memory _title, string memory _description, string memory _ipfsHash, uint256 _price) public onlyCreator(_id) {
+//         Content storage content = contents[_id];
+//         content.title = _title;
+//         content.description = _description;
+//         content.ipfsHash = _ipfsHash;
+//         content.price = _price;
 //     }
 
-//     function getContent(uint256 contentId) public view returns (Content memory) {
-//         return contents[contentId];
+//     function toggleContentStatus(uint256 _id) public onlyCreator(_id) {
+//         contents[_id].isActive = !contents[_id].isActive;
 //     }
 
-//     function getOwnedContents(address user) public view returns (uint256[] memory) {
-//         uint256[] memory ownedContentsIds = new uint256[](contentCount);
-//         uint256 count = 0;
+//     function purchaseContent(uint256 _id) public payable {
+//         Content storage content = contents[_id];
+//         require(content.isActive, "This content is not available for purchase.");
+//         require(msg.value >= content.price, "Insufficient funds to purchase this content.");
+//         require(!contentPurchases[msg.sender][_id], "You have already purchased this content.");
 
+//         contentPurchases[msg.sender][_id] = true;
+//         payable(content.creator).transfer(content.price);
+//         emit ContentPurchased(_id, msg.sender, content.creator, content.ipfsHash, content.price);
+//     }
+
+//     function getContent(uint256 _id) public view returns (Content memory) {
+//         return contents[_id];
+//     }
+
+//     function getCreatorContents(address _creator) public view returns (Content[] memory) {
+//         uint256 creatorContentCount = 0;
 //         for (uint256 i = 1; i <= contentCount; i++) {
-//             if (purchasedContents[user][i]) {
-//                 ownedContentsIds[count] = i;
-//                 count++;
+//             if (contents[i].creator == _creator) {
+//                 creatorContentCount++;
 //             }
 //         }
 
-//         return ownedContentsIds;
+//         Content[] memory creatorContents = new Content[](creatorContentCount);
+//         uint256 index = 0;
+//         for (uint256 i = 1; i <= contentCount; i++) {
+//             if (contents[i].creator == _creator) {
+//                 creatorContents[index] = contents[i];
+//                 index++;
+//             }
+//         }
+
+//         return creatorContents;
+//     }
+
+//     function getAvailableContents() public view returns (Content[] memory) {
+//         uint256 availableContentCount = 0;
+//         for (uint256 i = 1; i <= contentCount; i++) {
+//             if (contents[i].isActive) {
+//                 availableContentCount++;
+//             }
+//         }
+
+//         Content[] memory availableContents = new Content[](availableContentCount);
+//         uint256 index = 0;
+//         for (uint256 i = 1; i <= contentCount; i++) {
+//             if (contents[i].isActive) {
+//                 availableContents[index] = contents[i];
+//                 index++;
+//             }
+//         }
+
+//         return availableContents;
+//     }
+// }
+
+
+
+// SPDX-License-Identifier: MIT
+// pragma solidity ^0.8.0;
+
+// import "@openzeppelin/contracts/utils/Strings.sol";
+
+// contract ContentPlatform {
+//     using Strings for uint256;
+
+//     struct Content {
+//         uint256 id;
+//         address creator;
+//         string title;
+//         string description;
+//         string ipfsHash;
+//         uint256 price;
+//         bool isActive;
+//     }
+
+//     mapping(uint256 => Content) public contents;
+//     mapping(address => mapping(uint256 => bool)) public contentPurchases;
+//     mapping(bytes32 => bool) public existingContentHashes;
+//     uint256 public contentCount;
+
+//     event ContentCreated(uint256 indexed id, address indexed creator, string title, string description, string ipfsHash, uint256 price);
+//     event ContentPurchased(uint256 indexed id, address indexed buyer, address indexed creator, string ipfsHash, uint256 price);
+
+//     modifier onlyCreator(uint256 _id) {
+//         require(contents[_id].creator == msg.sender, "You are not the creator of this content.");
+//         _;
+//     }
+
+//     function createContent(string memory _title, string memory _description, string memory _ipfsHash, uint256 _price) public {
+//         bytes32 contentHash = keccak256(abi.encodePacked(_ipfsHash));
+//         require(!existingContentHashes[contentHash], "Similar content already exists.");
+
+//         contentCount++;
+//         contents[contentCount] = Content(contentCount, msg.sender, _title, _description, _ipfsHash, _price, true);
+//         existingContentHashes[contentHash] = true;
+//         emit ContentCreated(contentCount, msg.sender, _title, _description, _ipfsHash, _price);
+//     }
+
+//     function updateContent(uint256 _id, string memory _title, string memory _description, string memory _ipfsHash, uint256 _price) public onlyCreator(_id) {
+//         bytes32 contentHash = keccak256(abi.encodePacked(_ipfsHash));
+//         require(!existingContentHashes[contentHash] || contents[_id].ipfsHash == _ipfsHash, "Similar content already exists.");
+
+//         Content storage content = contents[_id];
+//         content.title = _title;
+//         content.description = _description;
+//         content.ipfsHash = _ipfsHash;
+//         content.price = _price;
+
+//         if (content.ipfsHash != _ipfsHash) {
+//             existingContentHashes[keccak256(abi.encodePacked(content.ipfsHash))] = false;
+//             existingContentHashes[contentHash] = true;
+//         }
+//     }
+
+//     function toggleContentStatus(uint256 _id) public onlyCreator(_id) {
+//         contents[_id].isActive = !contents[_id].isActive;
+//     }
+
+//     function purchaseContent(uint256 _id) public payable {
+//         Content storage content = contents[_id];
+//         require(content.isActive, "This content is not available for purchase.");
+//         require(msg.value >= content.price, "Insufficient funds to purchase this content.");
+//         require(!contentPurchases[msg.sender][_id], "You have already purchased this content.");
+
+//         contentPurchases[msg.sender][_id] = true;
+//         payable(content.creator).transfer(content.price);
+//         emit ContentPurchased(_id, msg.sender, content.creator, content.ipfsHash, content.price);
+//     }
+
+//     function getContent(uint256 _id) public view returns (Content memory) {
+//         return contents[_id];
+//     }
+
+//      function getCreatorContents(address _creator) public view returns (Content[] memory) {
+//         uint256 creatorContentCount = 0;
+//         for (uint256 i = 1; i <= contentCount; i++) {
+//             if (contents[i].creator == _creator) {
+//                 creatorContentCount++;
+//             }
+//         }
+
+//         Content[] memory creatorContents = new Content[](creatorContentCount);
+//         uint256 index = 0;
+//         for (uint256 i = 1; i <= contentCount; i++) {
+//             if (contents[i].creator == _creator) {
+//                 creatorContents[index] = contents[i];
+//                 index++;
+//             }
+//         }
+
+//         return creatorContents;
+//     }
+
+//     function getAvailableContents() public view returns (Content[] memory) {
+//         uint256 availableContentCount = 0;
+//         for (uint256 i = 1; i <= contentCount; i++) {
+//             if (contents[i].isActive) {
+//                 availableContentCount++;
+//             }
+//         }
+
+//         Content[] memory availableContents = new Content[](availableContentCount);
+//         uint256 index = 0;
+//         for (uint256 i = 1; i <= contentCount; i++) {
+//             if (contents[i].isActive) {
+//                 availableContents[index] = contents[i];
+//                 index++;
+//             }
+//         }
+
+//         return availableContents;
 //     }
 // }
