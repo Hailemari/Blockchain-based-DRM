@@ -17,7 +17,7 @@ const userInfo = [
  
 ];
 
-export const Profile = () => {
+export const UserDashboard = () => {
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
       <aside className="md:w-1/4 bg-gray-100 border-r border-gray-300 p-4">

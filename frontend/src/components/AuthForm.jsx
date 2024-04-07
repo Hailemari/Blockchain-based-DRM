@@ -36,7 +36,6 @@ const initialFormState = {
   email: '',
   password: '',
   confirmPassword: '',
-  passwordVisible: false,
 }
 
 
@@ -48,10 +47,13 @@ const initialFormState = {
  * @param {string} props.mode - The mode of the form, either 'register' or 'login'.
  * @returns {JSX.Element} The rendered AuthForm component.
  */
+
 const AuthForm = ({ mode }) => {
   const [formState, setFormState] = useState({ ...initialFormState });
   const [errors, setErrors] = useState({});
-  const [alert, setAlert] = useState({ message: '', type: '' }); 
+  const [alert, setAlert] = useState({ message: '', type: '' });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const location = useLocation();
 
 const searchParams = new URLSearchParams(location.search);
@@ -169,12 +171,19 @@ useEffect(() => {
     }
   }, [isLoginSuccess, navigate, LoginErrors, registerData]);
 
+  const handlePasswordVisibility = () => {
+    setShowPassword((prevState) => !prevState);
+  };
+
+  const handleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword((prevState) => !prevState);
+  };
+
   const content = mode === 'register' ? registerContent : signinContent;
 
 
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-xl">
-      
       <h2 className="text-2xl font-semibold mb-4 text-center">
         {content.header}
       </h2>
@@ -190,6 +199,7 @@ useEffect(() => {
                   type="text"
                   className="mt-1 p-2 w-full border rounded"
                   value={formState.firstName}
+                  placeholder='Enter First Name'
                   onChange={(e) =>
                     setFormState((prevState) => ({
                       ...prevState,
@@ -210,6 +220,7 @@ useEffect(() => {
                   type="text"
                   className="mt-1 p-2 w-full border rounded"
                   value={formState.lastName}
+                  placeholder='Enter Last Name'
                   onChange={(e) =>
                     setFormState((prevState) => ({
                       ...prevState,
@@ -228,6 +239,7 @@ useEffect(() => {
                 type="email"
                 className="mt-1 p-2 w-full border rounded"
                 value={formState.email}
+                placeholder='Enter Email'
                 onChange={(e) =>
                   setFormState((prevState) => ({
                     ...prevState,
@@ -242,32 +254,36 @@ useEffect(() => {
           </>
         )}
 
-        <div className="mb-4">
-          <label className="block text-gray-700">Username</label>
-          <input
-            type="text"
-            className="mt-1 p-2 w-full border rounded"
-            value={formState.username}
-            onChange={(e) =>
-              setFormState((prevState) => ({
-                ...prevState,
-                username: e.target.value,
-              }))
-            }
-          />
-          {errors.username && (
-            <p className="text-red-500 mt-2">{errors.username}</p>
-          )}
-        </div>
+        {mode === 'signin' && (
+          <div className="mb-4">
+            <label className="block text-gray-700 justify-center">Username or Email</label>
+            <input
+              type="text"
+              className="mt-1 p-2 w-full border rounded"
+              value={formState.username}
+              placeholder='Enter Username or Email'
+              onChange={(e) =>
+                setFormState((prevState) => ({
+                  ...prevState,
+                  username: e.target.value,
+                }))
+              }
+            />
+            {errors.username && (
+              <p className="text-red-500 mt-2">{errors.username}</p>
+            )}
+          </div>
+        )}
 
         <div className="mb-4">
           <label className="block text-gray-700">Password</label>
           <div className="relative">
             <input
-              type={formState.passwordVisible ? 'text' : 'password'}
+              type={showPassword ? 'text' : 'password'}
               className="mt-1 p-2 w-full border rounded"
               value={formState.password}
-              autoComplete='off'
+              placeholder='Enter Password'
+              autoComplete="off"
               onChange={(e) =>
                 setFormState((prevState) => ({
                   ...prevState,
@@ -278,14 +294,9 @@ useEffect(() => {
 
             <div
               className="absolute inset-y-0 right-0 flex items-center pr-2 cursor-pointer"
-              onClick={() =>
-                setFormState((prevState) => ({
-                  ...prevState,
-                  passwordVisible: !prevState.passwordVisible, // Toggle password visibility
-                }))
-              }
+              onClick={handlePasswordVisibility}
             >
-              {formState.passwordVisible ? (
+              {showPassword ? (
                 <AiFillEye className="text-gray-500" />
               ) : (
                 <AiFillEyeInvisible className="text-gray-500" />
@@ -303,10 +314,11 @@ useEffect(() => {
               <label className="block text-gray-700">Confirm Password</label>
               <div className="relative">
                 <input
-                  type={formState.passwordVisible ? 'text' : 'password'}
+                  type={showConfirmPassword ? 'text' : 'password'}
                   className="mt-1 p-2 w-full border rounded"
                   value={formState.confirmPassword}
-                  autoComplete='off'
+                  placeholder='Confirm Password'
+                  autoComplete="off"
                   onChange={(e) =>
                     setFormState((prevState) => ({
                       ...prevState,
@@ -316,14 +328,9 @@ useEffect(() => {
                 />
                 <div
                   className="absolute inset-y-0 right-0 flex items-center pr-2 cursor-pointer"
-                  onClick={() =>
-                    setFormState((prevState) => ({
-                      ...prevState,
-                      passwordVisible: !prevState.passwordVisible,
-                    }))
-                  }
+                  onClick={handleConfirmPasswordVisibility}
                 >
-                  {formState.confirmPassword ? (
+                  {showConfirmPassword ? (
                     <AiFillEye className="text-gray-500" />
                   ) : (
                     <AiFillEyeInvisible className="text-gray-500" />
@@ -354,11 +361,13 @@ useEffect(() => {
           {content.buttonText}
         </button>
       </form>
-      {errors.general && <p className="text-red-500 mt-2 text-center">{errors.general}</p>}
+      {errors.general && (
+        <p className="text-red-500 mt-2 text-center">{errors.general}</p>
+      )}
       {mode === 'signin' && (
         <div className="flex justify-end">
           <Link
-            to="/reset-password"
+            to="/request-password-reset"
             className="text-gray-700 hover:underline mt-2 "
           >
             Forgot Password?
@@ -366,18 +375,24 @@ useEffect(() => {
         </div>
       )}
       <div className="flex items-center mt-6">
-        <div className="border-t border-gray-300 w-full"></div>
+        <div className="border-t border-gray-300 w-full flex-grow"></div>
         <span className="px-3 text-gray-500">Or</span>
-        <div className="border-t border-gray-300 w-full"></div>
+        <div className="border-t border-gray-300 w-full flex-grow"></div>
       </div>
-      <h1 className='mt-5'>Continue With</h1>
+      <h1 className="mt-5"></h1>
 
       <div className="grid grid-cols-2 gap-8 mt-2">
-        <button className="flex hover:border items-center border-gray-300 rounded" onClick={() => {}}>
+        <button
+          className="flex border items-center border-gray-300 rounded"
+          onClick={() => {}}
+        >
           <FcGoogle className="mr-2" />
           Google
         </button>
-        <button className="flex items-center hover:border border-gray-300 rounded" onClick={() => {}}>
+        <button
+          className="flex items-center border border-gray-300 rounded"
+          onClick={() => {}}
+        >
           <FaFacebook className="mr-2 ml-3" />
           Facebook
         </button>
@@ -389,7 +404,7 @@ useEffect(() => {
         </Link>
       </p>
     </div>
-  )
+  );
 }
 
 export default AuthForm

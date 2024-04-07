@@ -16,32 +16,34 @@ export const NewUserScreen = () => {
         </h1>
       </div>
       <div className="flex justify-center items-center">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-        <UserCard
-          icon={<BsPersonVideo3 className="text-6xl mx-auto" />}
-          userType="Creator"
-          selectedUserType={userType}
-          setUserType={setUserType}
-          description="Create and share your books and other resources"
-        />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+          <UserCard
+            icon={<BsPersonVideo3 className="text-6xl mx-auto" />}
+            userType="Creator"
+            selectedUserType={userType}
+            setUserType={setUserType}
+            description="Create and share your books and other resources"
+          />
 
-        <UserCard
-          icon={<FcReadingEbook className="text-6xl mx-auto" />}
-          userType="User"
-          selectedUserType={userType}
-          setUserType={setUserType}
-          description="Join as a User and explore the content and other resources"
-        />
+          <UserCard
+            icon={<FcReadingEbook className="text-6xl mx-auto" />}
+            userType="User"
+            selectedUserType={userType}
+            setUserType={setUserType}
+            description="Join as a User and explore the content and other resources"
+          />
+        </div>
       </div>
-      </div>
-      
 
       <div className="text-center mt-8">
         <button
-          className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded"
+          className={`bg-gradient-to-r from-cyan-500 to-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded ${userType ? "" : "opacity-50 cursor-not-allowed"}`}
           onClick={() => {
-            navigate(`/register?role=${userType}`);
+            if (userType) {
+              navigate(`/register?role=${userType}`);
+            }
           }}
+          disabled={!userType}
         >
           {userType ? `Register as ${userType}` : "Select Account Type"}
         </button>

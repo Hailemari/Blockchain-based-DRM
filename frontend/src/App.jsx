@@ -4,7 +4,11 @@ import { Register } from './pages/Register'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { NewUserScreen } from './pages/newUser'
 import { Header } from './components/Header'
-import { Profile } from './components/userProfile'
+import ResetPassword from './components/passwordReset'
+import { OTP } from './components/resetPasswordRequest'
+import { OTPInput } from './components/OtpInput'
+import { UserDashboard } from './pages/user-dashboard/userDashboard'
+import { UserProfile } from './pages/userProfile'
 
 
 function App() {
@@ -19,7 +23,11 @@ function App() {
           <Route path="/" element={<NewUserScreen />} />
           <Route path="signin" element={<Signin />} />
           <Route path="register" element={<Register />} />
-          <Route path="/profile" element={<Profile />} />
+          <Route path="user-dashboard" element={<UserDashboard />} />
+          <Route path="/request-password-reset" element ={<OTP/>} />
+          <Route path="/verify-otp" element ={<OTPInput/>} />
+          <Route path='/reset-password' element ={<ResetPassword/>} />
+          <Route path="profile" element={<UserProfile />} />
         </Routes>
       </BrowserRouter>
     </>
