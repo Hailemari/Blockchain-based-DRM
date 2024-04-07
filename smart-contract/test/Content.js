@@ -9,146 +9,177 @@ describe("ContentPlatform", function () {
     contentPlatform = await ContentPlatform.deploy();
   });
 
-  describe("Deployment", function () {
-    it("Should set the right owner", async function () {
-      expect(await contentPlatform.owner()).to.equal(owner.address);
-    });
-  });
-
-  describe("Content Upload", function () {
-    it("Should allow content upload and emit event", async function () {
-      await expect(contentPlatform.connect(addr1).uploadContent(
-        "Test Title",
-        "Test Description",
-        "Test Hash",
-        100,
-        200,
-        300,
-        0
-      )).to.emit(contentPlatform, "ContentUploaded");
-    });
-
-    it("Should not allow duplicate content uploads", async function () {
-      await contentPlatform.connect(addr1).uploadContent(
-        "Test Title",
-        "Test Description",
-        "Test Hash",
-        100,
-        200,
-        300,
-        0
-      );
-  
+  describe("Content Creation", function () {
+    it("Should create a new content and emit event", async function () {
       await expect(
-        contentPlatform.connect(addr2).uploadContent(
+        contentPlatform.createContent(
+          "Test Title",
+          "Test Description",
+          "QmTest",
+          100
+        )
+      )
+        .to.emit(contentPlatform, "ContentCreated")
+        .withArgs(1, owner.address, "Test Title", "Test Description", "QmTest", 100);
+    });
+
+    it("Should not create content with existing hash", async function () {
+      await contentPlatform.createContent(
+        "Test Title",
+        "Test Description",
+        "QmTest",
+        100
+      );
+      await expect(
+        contentPlatform.createContent(
           "Another Title",
           "Another Description",
-          "Test Hash", // Same content hash as the previous upload
-          100,
-          200,
-          300,
-          0
+          "QmTest", // Same IPFS hash as the previous content
+          200
         )
-      ).to.be.revertedWith("Content with this hash already exists");
+      ).to.be.reverted;
     });
   });
 
-  describe("Subscription", function () {
-    it("Should allow subscription and emit event", async function () {
-      await contentPlatform.connect(addr1).uploadContent(
+  describe("Content Update", function () {
+    beforeEach(async function () {
+      await contentPlatform.createContent(
         "Test Title",
         "Test Description",
-        "Test Hash",
-        100,
-        200,
-        300,
-        0
+        "QmTest",
+        100
       );
-      await expect(contentPlatform.connect(addr2).subscribe(1, 0, { value: 100 })).to.emit(contentPlatform, "Subscribed");
+    });
+
+    it("Should update content details", async function () {
+      await contentPlatform.updateContent(
+        1,
+        "Updated Title",
+        "Updated Description",
+        "QmUpdated",
+        200
+      );
+      const updatedContent = await contentPlatform.getContent(1);
+      expect(updatedContent.title).to.equal("Updated Title");
+      expect(updatedContent.description).to.equal("Updated Description");
+      expect(updatedContent.ipfsHash).to.equal("QmUpdated");
+      expect(updatedContent.price).to.equal(200);
+    });
+
+    it("Should not update content with existing hash", async function () {
+      await contentPlatform.createContent(
+        "Another Title",
+        "Another Description",
+        "QmAnother",
+        200
+      );
+      await expect(
+        contentPlatform.updateContent(
+          1,
+          "Updated Title",
+          "Updated Description",
+          "QmAnother", // Existing IPFS hash from another content
+          300
+        )
+      ).to.be.reverted;
+    });
+
+    it("Should only allow creator to update content", async function () {
+      await expect(
+        contentPlatform.connect(addr1).updateContent(
+          1,
+          "Updated Title",
+          "Updated Description",
+          "QmUpdated",
+          200
+        )
+      ).to.be.reverted;
     });
   });
 
-  describe("Unsubscription", function () {
-    it("Should allow unsubscription and emit event", async function () {
-      await contentPlatform.connect(addr1).uploadContent(
+  describe("Content Purchase", function () {
+    beforeEach(async function () {
+      await contentPlatform.createContent(
         "Test Title",
         "Test Description",
-        "Test Hash",
-        100,
-        200,
-        300,
-        0
+        "QmTest",
+        100
       );
-      await contentPlatform.connect(addr2).subscribe(1, 0, { value: 100 });
-      await expect(contentPlatform.connect(addr2).unsubscribe(1)).to.emit(contentPlatform, "Unsubscribed");
+    });
+
+    it("Should purchase content and emit event", async function () {
+      await expect(
+        contentPlatform.connect(addr1).purchaseContent(1, { value: 100 })
+      )
+        .to.emit(contentPlatform, "ContentPurchased")
+        .withArgs(1, addr1.address, owner.address, "QmTest", 100);
+    });
+
+    it("Should not purchase inactive content", async function () {
+      await contentPlatform.toggleContentStatus(1);
+      await expect(
+        contentPlatform.connect(addr1).purchaseContent(1, { value: 100 })
+      ).to.be.reverted;
+    });
+
+    it("Should not purchase with insufficient funds", async function () {
+      await expect(
+        contentPlatform.connect(addr1).purchaseContent(1, { value: 50 })
+      ).to.be.revertedWith("Insufficient funds to purchase this content.");
+    });
+
+    it("Should not purchase already purchased content", async function () {
+      await contentPlatform.connect(addr1).purchaseContent(1, { value: 100 });
+      await expect(
+        contentPlatform.connect(addr1).purchaseContent(1, { value: 100 })
+      ).to.be.reverted;
     });
   });
 
-  describe("isSubscribed", function () {
-    it("Should return true if the user is subscribed", async function () {
-      await contentPlatform.connect(addr1).uploadContent(
+  describe("Content Retrieval", function () {
+    beforeEach(async function () {
+      await contentPlatform.createContent(
         "Test Title",
         "Test Description",
-        "Test Hash",
-        100,
-        200,
-        300,
-        0
+        "QmTest",
+        100
       );
-      await contentPlatform.connect(addr2).subscribe(1, 0, { value: 100 });
-      expect(await contentPlatform.isSubscribed(1, addr2.address)).to.equal(true);
+      await contentPlatform.createContent(
+        "Test Title 2",
+        "Test Description 2",
+        "QmTest2",
+        200
+      );
+      await contentPlatform.connect(addr1).createContent(
+        "Test Title 3",
+        "Test Description 3",
+        "QmTest3",
+        300
+      );
+      await contentPlatform.toggleContentStatus(2);
     });
-  });
 
-  describe("getSubscribedContents", function () {
-    it("Should return the list of content IDs the user is subscribed to", async function () {
-      await contentPlatform.connect(addr1).uploadContent(
-        "Test Title",
-        "Test Description",
-        "Test Hash",
-        100,
-        200,
-        300,
-        0
-      );
-      await contentPlatform.connect(addr2).subscribe(1, 0, { value: 100 });
-      const subscribedContents = await contentPlatform.getSubscribedContents(addr2.address);
-      expect(Number(subscribedContents[0])).to.equal(1);
+    it("Should retrieve content details", async function () {
+      const content = await contentPlatform.getContent(1);
+      expect(content.title).to.equal("Test Title");
+      expect(content.description).to.equal("Test Description");
+      expect(content.ipfsHash).to.equal("QmTest");
+      expect(content.price).to.equal(100);
+      expect(content.isActive).to.equal(true);
     });
-  });
 
-  describe("getContentDetails", function () {
-    it("Should return the details of the content", async function () {
-      await contentPlatform.connect(addr1).uploadContent(
-        "Test Title",
-        "Test Description",
-        "Test Hash",
-        100,
-        200,
-        300,
-        0
-      );
-      const contentDetails = await contentPlatform.getContentDetails(1);
-      expect(contentDetails[0]).to.equal("Test Title");
-      expect(contentDetails[1]).to.equal("Test Description");
-      expect(contentDetails[2]).to.equal("Test Hash");
+    it("Should retrieve creator's contents", async function () {
+      const creatorContents = await contentPlatform.getCreatorContents(owner.address);
+      expect(creatorContents.length).to.equal(2);
+      expect(creatorContents[0].title).to.equal("Test Title");
+      expect(creatorContents[1].title).to.equal("Test Title 2");
     });
-  });
 
-  describe("getSubscriptionInfo", function () {
-    it("Should return the subscription info of the user for the content", async function () {
-      await contentPlatform.connect(addr1).uploadContent(
-        "Test Title",
-        "Test Description",
-        "Test Hash",
-        100,
-        200,
-        300,
-        0
-      );
-      await contentPlatform.connect(addr2).subscribe(1, 0, { value: 100 });
-      const subscriptionInfo = await contentPlatform.getSubscriptionInfo(1, addr2.address);
-      expect(subscriptionInfo[0]).to.equal(0);
+    it("Should retrieve available contents", async function () {
+      const availableContents = await contentPlatform.getAvailableContents();
+      expect(availableContents.length).to.equal(2);
+      expect(availableContents[0].title).to.equal("Test Title");
+      expect(availableContents[1].title).to.equal("Test Title 3");
     });
   });
 });
