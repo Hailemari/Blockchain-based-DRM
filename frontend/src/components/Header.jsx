@@ -1,6 +1,6 @@
 import { FaBtc } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import React, { useState } from "react";
+import  { useState } from "react";
 
 export const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -36,7 +36,7 @@ export const Header = () => {
       </nav>
 
       <div>
-        <Link to="/dashboard" className="text-white hover:text-gray-300">
+        <Link to="user-dashboard" className="text-white hover:text-gray-300">
           Dashboard
         </Link>
         <span className="mx-2">|</span>
