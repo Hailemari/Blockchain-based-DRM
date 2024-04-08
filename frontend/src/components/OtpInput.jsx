@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 
 export const OTPInput = ({ onChange, value }) => {
@@ -33,4 +34,10 @@ export const OTPInput = ({ onChange, value }) => {
             </div>
         </div>
     );
+};
+
+
+OTPInput.propTypes = {
+    onChange: PropTypes.func.isRequired,
+    value: PropTypes.string.isRequired,
 };
