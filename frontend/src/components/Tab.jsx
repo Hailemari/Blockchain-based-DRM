@@ -1,3 +1,4 @@
+import propTypes from 'prop-types';
 const Tab = ({ tabIndex, activeTab, onClick, icon, label, children }) => {
     const isActive = tabIndex === activeTab;
 
@@ -18,3 +19,12 @@ const Tab = ({ tabIndex, activeTab, onClick, icon, label, children }) => {
 };
 
 export default Tab;
+
+Tab.propTypes = {
+    tabIndex: propTypes.number,
+    activeTab: propTypes.number,
+    onClick: propTypes.func,
+    icon: propTypes.element,
+    label: propTypes.string,
+    children: propTypes.node,
+};
