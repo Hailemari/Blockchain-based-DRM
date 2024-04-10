@@ -1,10 +1,11 @@
 
-import React, { useState } from "react";
+
 import { BiEdit, BiBell, BiSearch, BiVideo,BiMusic,BiBook, BiHistory } from "react-icons/bi";
 import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
 import Greetings from "../../components/greeting";
 import Search from "../../components/search";
 import Tab from "../../components/Tab";
+import { useState } from "react";
 const UserDashboard = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [activeTab, setActiveTab] = useState(1);
@@ -17,7 +18,7 @@ const UserDashboard = () => {
   const renderContentByType = (type) => {
     const content = userInfo[type] || [];
     if (content.length === 0) {
-      return <div className="justify-center ">You don't have any {type} yet!</div>;
+      return <div className="justify-center ">You don &apos;  t have any {type} yet!</div>;
     }
     return (
       <div>
@@ -88,7 +89,6 @@ const UserDashboard = () => {
               </button>
               <button className="text-blue-500 relative">
                 <BiEdit className="inline-block" />
-                {/* Edit profile tooltip */}
               </button>
             </div>
           </div>
