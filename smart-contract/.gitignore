@@ -1,0 +1,38 @@
+# Dependency directories
+/node_modules
+
+# Build files
+/build
+/dist
+
+# Environment variables
+.env
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Editor/IDE files
+.vscode
+.idea
+
+# Logs
+*.log
+
+# Environment configuration
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Hardhat artifacts
+artifacts
+cache
+
+# Optional: Uncomment the following lines if you're using TypeScript
+# /tsconfig.json
+# /tsconfig.build.json
+# /dist/**/*.d.ts
+
+# Optional: Uncomment the following line if you're using JavaScript instead of TypeScript
+# /dist
