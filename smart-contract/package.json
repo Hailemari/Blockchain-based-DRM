@@ -2,10 +2,11 @@
   "name": "hardhat-project",
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",
-    "hardhat": "^2.21.0"
+    "chai": "^4.4.1",
+    "hardhat": "^2.22.2"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^4.9.3",
+    "@openzeppelin/contracts": "^4.9.6",
     "ethers": "^6.11.1"
   }
 }

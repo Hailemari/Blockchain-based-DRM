@@ -16,11 +16,12 @@ describe("ContentPlatform", function () {
           "Test Title",
           "Test Description",
           "QmTest",
-          100
+          100,
+          0 // ContentType.Ebook
         )
       )
         .to.emit(contentPlatform, "ContentCreated")
-        .withArgs(1, owner.address, "Test Title", "Test Description", "QmTest", 100);
+        .withArgs(1, owner.address, "Test Title", "Test Description", "QmTest", 100, 0);
     });
 
     it("Should not create content with existing hash", async function () {
@@ -28,14 +29,16 @@ describe("ContentPlatform", function () {
         "Test Title",
         "Test Description",
         "QmTest",
-        100
+        100,
+        0 // ContentType.Ebook
       );
       await expect(
         contentPlatform.createContent(
           "Another Title",
           "Another Description",
           "QmTest", // Same IPFS hash as the previous content
-          200
+          200,
+          1 // ContentType.Video
         )
       ).to.be.reverted;
     });
@@ -47,7 +50,8 @@ describe("ContentPlatform", function () {
         "Test Title",
         "Test Description",
         "QmTest",
-        100
+        100,
+        0 // ContentType.Ebook
       );
     });
 
@@ -57,13 +61,15 @@ describe("ContentPlatform", function () {
         "Updated Title",
         "Updated Description",
         "QmUpdated",
-        200
+        200,
+        1 // ContentType.Video
       );
       const updatedContent = await contentPlatform.getContent(1);
       expect(updatedContent.title).to.equal("Updated Title");
       expect(updatedContent.description).to.equal("Updated Description");
       expect(updatedContent.ipfsHash).to.equal("QmUpdated");
       expect(updatedContent.price).to.equal(200);
+      expect(updatedContent.contentType).to.equal(1); // ContentType.Video
     });
 
     it("Should not update content with existing hash", async function () {
@@ -71,7 +77,8 @@ describe("ContentPlatform", function () {
         "Another Title",
         "Another Description",
         "QmAnother",
-        200
+        200,
+        1 // ContentType.Video
       );
       await expect(
         contentPlatform.updateContent(
@@ -79,7 +86,8 @@ describe("ContentPlatform", function () {
           "Updated Title",
           "Updated Description",
           "QmAnother", // Existing IPFS hash from another content
-          300
+          300,
+          2 // ContentType.Music
         )
       ).to.be.reverted;
     });
@@ -91,7 +99,8 @@ describe("ContentPlatform", function () {
           "Updated Title",
           "Updated Description",
           "QmUpdated",
-          200
+          200,
+          1 // ContentType.Video
         )
       ).to.be.reverted;
     });
@@ -103,7 +112,8 @@ describe("ContentPlatform", function () {
         "Test Title",
         "Test Description",
         "QmTest",
-        100
+        100,
+        0 // ContentType.Ebook
       );
     });
 
@@ -142,19 +152,22 @@ describe("ContentPlatform", function () {
         "Test Title",
         "Test Description",
         "QmTest",
-        100
+        100,
+        0 // ContentType.Ebook
       );
       await contentPlatform.createContent(
         "Test Title 2",
         "Test Description 2",
         "QmTest2",
-        200
+        200,
+        1 // ContentType.Video
       );
       await contentPlatform.connect(addr1).createContent(
         "Test Title 3",
         "Test Description 3",
         "QmTest3",
-        300
+        300,
+        2 // ContentType.Music
       );
       await contentPlatform.toggleContentStatus(2);
     });
@@ -166,6 +179,7 @@ describe("ContentPlatform", function () {
       expect(content.ipfsHash).to.equal("QmTest");
       expect(content.price).to.equal(100);
       expect(content.isActive).to.equal(true);
+      expect(content.contentType).to.equal(0); // ContentType.Ebook
     });
 
     it("Should retrieve creator's contents", async function () {

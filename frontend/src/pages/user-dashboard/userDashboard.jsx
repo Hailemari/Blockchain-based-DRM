@@ -1,42 +1,31 @@
-import  { useState } from "react";
-import { BiEdit, BiBell, BiSearch } from "react-icons/bi";
+
+
+import { BiEdit, BiBell, BiSearch, BiVideo,BiMusic,BiBook, BiHistory } from "react-icons/bi";
+import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
 import Greetings from "../../components/greeting";
 import Search from "../../components/search";
-
+import Tab from "../../components/Tab";
+import { useState } from "react";
 const UserDashboard = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [activeTab, setActiveTab] = useState(1);
-  const userInfo = getUserInfo();
+  const userInfo = getUserInfo()[0]; // Assume getUserInfo() is defined elsewhere
 
-  const toggleSearch = () => {
-    setShowSearch(!showSearch);
-  };
+  const toggleSearch = () => setShowSearch(!showSearch);
 
-  const renderContent = () => {
-    switch (activeTab) {
-      case 1:
-        return renderContentByType("Ebook");
-      case 2:
-        return renderContentByType("Video");
-      case 3:
-        return renderContentByType("Music");
-      case 4:
-        return renderUsageHistory();
-      default:
-        return null;
-    }
-  };
+  const handleTabChange = (tabIndex) => setActiveTab(tabIndex);
 
   const renderContentByType = (type) => {
+    const content = userInfo[type] || [];
+    if (content.length === 0) {
+      return <div className="justify-center ">You don &apos;  t have any {type} yet!</div>;
+    }
     return (
       <div>
         <h1 className="text-2xl font-bold mb-4">{type}</h1>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {userInfo[0][type].map((item) => (
-            <div
-              key={item.id}
-              className="bg-gray-100 p-4 rounded-md border border-gray-300"
-            >
+          {content.map((item) => (
+            <div key={item.id} className="bg-gray-100 p-4 rounded-md border border-gray-300">
               <h2 className="text-lg font-bold">{item.name}</h2>
               <p className="text-gray-600">{item.description}</p>
             </div>
@@ -47,31 +36,41 @@ const UserDashboard = () => {
   };
 
   const renderUsageHistory = () => {
+    const data = [
+      { name: "Ebook", value: userInfo.Ebook?.length || 0, fill: "#8884d8" },
+      { name: "Video", value: userInfo.Video?.length || 0, fill: "#83a6ed" },
+      { name: "Music", value: userInfo.Music?.length || 0, fill: "#8dd1e1" }
+    ];
+
     return (
-      <div>
-        <h1 className="text-2xl font-bold mb-4">Usage History</h1>
-        {/* Render usage history content */}
-      </div>
+      <PieChart width={400} height={400}>
+        <Pie data={data} dataKey="value" cx="50%" cy="50%" outerRadius={100} label>
+          {data.map((entry, index) => (
+            <Cell key={`cell-${index}`} fill={entry.fill} />
+          ))}
+        </Pie>
+        <Tooltip />
+        <Legend />
+      </PieChart>
     );
   };
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
+      
       <aside className="md:w-1/4 bg-gray-100 border-r border-gray-300 p-4">
-        {userInfo.map((user) => (
-          <div key={user.id} className="mb-6">
-            <img
-              src="https://i.pravatar.cc/150?img=7"
-              alt="profile"
-              className=" h-[200px] w-[200px] rounded-md mb-2"
-            />
-            <h1 className="text-xl font-bold">
-              {user.firstName} {user.lastName}
-            </h1>
-            <p className="text-gray-600">{user.email}</p>
-            <p className="mt-2">{user.bio}</p>
-          </div>
-        ))}
+        <div className="mb-6">
+          <img
+            src="https://i.pravatar.cc/150?img=7"
+            alt="profile"
+            className="h-[200px] w-[200px] rounded-md mb-2"
+          />
+          <h1 className="text-xl font-bold">
+            {userInfo.firstName} {userInfo.lastName}
+          </h1>
+          <p className="text-gray-600">{userInfo.email}</p>
+          <p className="mt-2">{userInfo.bio}</p>
+        </div>
       </aside>
       <div className="md:w-3/4 bg-white p-4">
         <header className="border-b border-gray-300 pb-4 mb-4">
@@ -84,62 +83,53 @@ const UserDashboard = () => {
                 </button>
                 {showSearch && <Search onClose={toggleSearch} />}
               </div>
-              <div className="mr-4">
-                <button className="text-blue-500 relative">
-                  <BiBell className="inline-block" />
-                  <span className="absolute top-full left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-2 py-1 text-sm rounded opacity-0 transition-opacity duration-300 pointer-events-none">
-                    Notifications
-                  </span>
-                </button>
-              </div>
-              <div>
-                <button className="text-blue-500 relative">
-                  <BiEdit className="inline-block" />
-                  <span className="absolute top-full left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-2 py-1 text-sm rounded opacity-0 transition-opacity duration-300 pointer-events-none">
-                    Edit Profile
-                  </span>
-                </button>
-              </div>
+              <button className="text-blue-500 relative">
+                <BiBell className="inline-block" />
+                {/* Notifications tooltip */}
+              </button>
+              <button className="text-blue-500 relative">
+                <BiEdit className="inline-block" />
+              </button>
             </div>
           </div>
         </header>
         <div>
-          <div className="flex mb-4">
-            <button
-              className={`mr-2 p-2 ${
-                activeTab === 1 ? "bg-blue-500 text-white" : "bg-gray-200"
-              }`}
-              onClick={() => setActiveTab(1)}
-            >
-              Ebook
-            </button>
-            <button
-              className={`mr-2 p-2 ${
-                activeTab === 2 ? "bg-blue-500 text-white" : "bg-gray-200"
-              }`}
-              onClick={() => setActiveTab(2)}
-            >
-              Video
-            </button>
-            <button
-              className={`mr-2 p-2 ${
-                activeTab === 3 ? "bg-blue-500 text-white" : "bg-gray-200"
-              }`}
-              onClick={() => setActiveTab(3)}
-            >
-              Music
-            </button>
-            <button
-              className={`p-2 ${
-                activeTab === 4 ? "bg-blue-500 text-white" : "bg-gray-200"
-              }`}
-              onClick={() => setActiveTab(4)}
-            >
-              Usage History
-            </button>
-          </div>
+        <div className="flex mb-4">
+      <Tab
+        tabIndex={1}
+        activeTab={activeTab}
+        onClick={() => handleTabChange(1)}
+        icon={<BiBook />}
+        label="Ebook"
+      />
+      <Tab
+        tabIndex={2}
+        activeTab={activeTab}
+        onClick={() => handleTabChange(2)}
+        icon={<BiVideo />}
+        label="Video"
+      />
+      <Tab
+        tabIndex={3}
+        activeTab={activeTab}
+        onClick={() => handleTabChange(3)}
+        icon={<BiMusic />}
+        label="Music"
+      />
+      <Tab
+        tabIndex={4}
+        activeTab={activeTab}
+        onClick={() => handleTabChange(4)}
+        icon={<BiHistory />}
+        label="Usage History"
+      />
+    </div>
           <div>
-            {renderContent()}
+            {activeTab === 1 && renderContentByType("Ebook")}
+            {activeTab === 2 && renderContentByType("Video")}
+            {activeTab === 3 && renderContentByType("Music")}
+            {activeTab === 4 && renderUsageHistory()}
+            {/* Consider adding additional tabs here for Recommendations, Settings, Feedback */}  
           </div>
         </div>
       </div>
@@ -149,38 +139,44 @@ const UserDashboard = () => {
 
 export default UserDashboard;
 
-const getUserInfo = () => {
-  return [
-    {
-      id: 1,
-      firstName: "Naol",
-      lastName: "D",
-      email: "naol@gmail.com",
-      bio: "I am a software engineer",
-      Ebook: [
-        {
-          id: 1,
-          name: "JavaScript",
-          description: "JavaScript for beginners",
-        },
-        {
-          id: 2,
-          name: "React",
-          description: "React for beginners",
-        },
-        {
-          id: 3,
-          name: "Node",
-          description: "Node for beginners",
-        },
-      ],
-      Video: [
-        {
-          id: 1,
-          name: "JavaScript",
-          description: "JavaScript for beginners video",
-        },
-      ]
-    },
-  ];
-}
+const getUserInfo = () => [
+  {
+    id: 1,
+    firstName: "John",
+    lastName: "Doe",
+    email: "john@example.com",
+    bio: "I enjoy learning new things.",
+    Ebook: [
+      {
+        id: 1,
+        name: "JavaScript",
+        description: "JavaScript for beginners",
+      },
+      {
+        id: 2,
+        name: "React",
+        description: "React for beginners",
+      },
+      {
+        id: 3,
+        name: "Node",
+        description: "Node for beginners",
+      },
+    ],
+    Video: [
+      {
+        id: 1,
+        name: "JavaScript",
+        description: "JavaScript for beginners video",
+      },
+    ],
+    Music: [
+      {
+        id: 1,
+        name: "ALi birra ",
+        description: "Best Oromo music",
+      },
+    ]
+  }
+];
+
