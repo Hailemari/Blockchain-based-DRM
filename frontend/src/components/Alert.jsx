@@ -1,3 +1,4 @@
+
 import PropTypes from 'prop-types';
 
 const Alert = ({ message, type }) => {
@@ -16,7 +17,7 @@ const Alert = ({ message, type }) => {
         };
     
         return (
-            <div className={`alert ${alertStyle(type)}`}>
+            <div role = "alert" className={`alert ${alertStyle(type)}`}>
                 {message}
             </div>
         );
