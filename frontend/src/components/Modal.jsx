@@ -5,8 +5,8 @@ const Modal = ({ onClose, contentTypes }) => {
             <div className="bg-white p-4 rounded-md">
                 <h1 className="text-2xl font-bold">Choose Content Type</h1>
                 <div className="flex justify-between">
-                    {contentTypes.map((type, index) => (
-                        <button key={index} className="bg-blue-500 text-white px-4 py-2 rounded-md">{type}</button>
+                    {contentTypes.map((type) => (
+                        <button key={type} className="bg-blue-500 text-white px-4 py-2 rounded-md">{type}</button>
                     ))}
                 </div>
                 <button onClick={onClose} className="text-gray-600 mt-4">
@@ -16,7 +16,6 @@ const Modal = ({ onClose, contentTypes }) => {
         </div>
     );
 }
-
 
 export default Modal;
 

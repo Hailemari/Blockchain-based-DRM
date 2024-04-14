@@ -1,6 +1,7 @@
 import { FaBtc } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import  { useState } from "react";
+import { ProfileAvatar } from "./ProfileAvatar";
 
 export const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -36,68 +37,12 @@ export const Header = () => {
       </nav>
 
       <div>
-        <Link to="user-dashboard" className="text-white hover:text-gray-300">
+        {/* <Link to="user-dashboard" className="text-white hover:text-gray-300">
           Dashboard
-        </Link>
-        <span className="mx-2">|</span>
+        </Link> */}
+        {/* <span className="mx-2">|</span> */}
 
-        <div className="relative inline-block text-left">
-          <button
-            onClick={toggleMenu}
-            className="inline-flex justify-center w-full rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-none"
-          >
-            Profile
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="-mr-1 h-5 w-5 text-gray-400"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                fillRule="evenodd"
-                d="M6.293 7.293a1 1 0 011.414 0L10 9.586l2.293-2.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </button>
-
-          {isOpen && (
-            <div className="absolute right-0 mt-2 w-56 origin-top-right bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-              <div className="py-1">
-                <Link
-                  to="#"
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  onClick={closeMenu}
-                >
-                  Account settings
-                </Link>
-                <Link
-                  to="#"
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  onClick={closeMenu}
-                >
-                  Support
-                </Link>
-                <Link
-                  to="#"
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  onClick={closeMenu}
-                >
-                  License
-                </Link>
-                <form method="POST" action="#">
-                  <button
-                    type="submit"
-                    className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    Sign out
-                  </button>
-                </form>
-              </div>
-            </div>
-          )}
-        </div>
+        <ProfileAvatar user={{ name: "Usmael A", email: "uabdureman@gmail.com" }} />
       </div>
     </header>
   );

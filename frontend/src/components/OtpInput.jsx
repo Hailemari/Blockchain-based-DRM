@@ -38,6 +38,6 @@ export const OTPInput = ({ onChange, value }) => {
 
 
 OTPInput.propTypes = {
-    onChange: PropTypes.func.isRequired,
-    value: PropTypes.string.isRequired,
+    onChange: PropTypes.func,
+    value: PropTypes.string,
 };

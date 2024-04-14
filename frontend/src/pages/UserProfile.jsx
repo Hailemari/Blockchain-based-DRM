@@ -1,4 +1,4 @@
-import  ProfileForm  from "../components/profileForm";
+import  ProfileForm  from "../components/ProfileForm";
 export const UserProfile = () => {
     return (
         <div>

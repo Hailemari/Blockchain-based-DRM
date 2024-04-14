@@ -2,8 +2,8 @@
 
 import { BiEdit, BiBell, BiSearch, BiVideo,BiMusic,BiBook, BiHistory } from "react-icons/bi";
 import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
-import Greetings from "../../components/greeting";
-import Search from "../../components/search";
+import Greetings from "../../components/Greeting";
+import Search from "../../components/Search";
 import Tab from "../../components/Tab";
 import { useState } from "react";
 const UserDashboard = () => {
@@ -45,8 +45,8 @@ const UserDashboard = () => {
     return (
       <PieChart width={400} height={400}>
         <Pie data={data} dataKey="value" cx="50%" cy="50%" outerRadius={100} label>
-          {data.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={entry.fill} />
+          {data.map((entry) => (
+            <Cell key={entry.name} fill={entry.fill} />
           ))}
         </Pie>
         <Tooltip />

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { BsPersonVideo3 } from 'react-icons/bs';
 import { FcReadingEbook } from 'react-icons/fc';
-import UserCard from "../components/newUserCard";
+import UserCard from "../components/NewUserCard";
 import { Link, useNavigate } from "react-router-dom";
 
 export const NewUserScreen = () => {
