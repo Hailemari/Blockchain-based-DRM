@@ -7,6 +7,7 @@ import {
 } from "react-icons/bi";
 import Search from "../../components/Search";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 export const CreatorDashboard = () => {
   const [showSearch, setShowSearch] = useState(false);
@@ -90,7 +91,7 @@ export const CreatorDashboard = () => {
                       Upload Audio
                     </button>
                     <button className="block w-full text-left px-4 py-2 hover:bg-gray-100">
-                      Upload Book
+                      <Link to = "uploadbook"> Upload Book</Link>
                     </button>
                   </div>
                 )}
