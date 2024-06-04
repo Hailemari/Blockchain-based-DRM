@@ -9,6 +9,7 @@ import { OTP } from './components/resetPasswordRequest'
 import { OTPInput } from './components/OtpInput'
 import { UserProfile } from './pages/userProfile'
 import UserDashboard from './pages/user-dashboard/userDashboard'
+import FileUploadPage from './pages/file-upload/uploadFile'
 
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
           <Route path="verify-otp" element ={<OTPInput/>} />
           <Route path="reset-password" element ={<ResetPassword/>} />
           <Route path="profile" element={<UserProfile />} />
+          <Route path="file-upload" element={<FileUploadPage/>} />
         </Routes>
       </BrowserRouter>
     </>
