@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
-contract ContentPlatform {
+contract ContentPlatform is Ownable {
     using Strings for uint256;
 
     enum ContentType { Ebook, Video, Music }
+    enum ContentStatus { Pending, Approved, Rejected }
 
     struct Content {
         uint256 id;
@@ -17,13 +19,33 @@ contract ContentPlatform {
         uint256 price;
         bool isActive;
         ContentType contentType;
+        ContentStatus status;
+        Permission permissions;
     }
+
+    struct Permission {
+        bool viewOnly;
+        bool download;
+    }
+
+    
 
     mapping(uint256 => Content) public contents;
     mapping(address => mapping(uint256 => bool)) public contentPurchases;
     mapping(bytes32 => bool) public existingContentHashes;
     uint256 public contentCount;
 
+    event ContentSubmitted(
+        uint256 indexed id,
+        address indexed creator,
+        string title,
+        string description,
+        string ipfsHash,
+        uint256 price,
+        ContentType contentType
+    );
+    event ContentApproved(uint256 indexed id, address indexed admin);
+    event ContentRejected(uint256 indexed id, address indexed admin);
     event ContentCreated(uint256 indexed id, address indexed creator, string title, string description, string ipfsHash, uint256 price, ContentType contentType);
     event ContentPurchased(uint256 indexed id, address indexed buyer, address indexed creator, string ipfsHash, uint256 price);
     event ContentDeleted(uint256 indexed id, address indexed creator);
@@ -33,40 +55,81 @@ contract ContentPlatform {
         _;
     }
 
-    function createContent(string memory _title, string memory _description, string memory _ipfsHash, uint256 _price, ContentType _contentType) public {
-        bytes32 contentHash = keccak256(abi.encodePacked(_ipfsHash));
-        require(!existingContentHashes[contentHash], "Similar content already exists.");
-        contentCount++;
-        contents[contentCount] = Content(contentCount, msg.sender, _title, _description, _ipfsHash, _price, true, _contentType);
-        existingContentHashes[contentHash] = true;
-        emit ContentCreated(contentCount, msg.sender, _title, _description, _ipfsHash, _price, _contentType);
+    function getContentByHash(string memory _ipfsHash) public view returns (bool, Content memory) {
+        for (uint i = 1; i <= contentCount; i++) {
+            if (keccak256(abi.encodePacked(contents[i].ipfsHash)) == keccak256(abi.encodePacked(_ipfsHash))) {
+                return (true, contents[i]);
+            }
+        }
+        return (false, Content(0, address(0), "", "", "", 0, false, ContentType.Ebook, ContentStatus.Pending, Permission(false, false)));
     }
 
-    function updateContent(uint256 _id, string memory _title, string memory _description, string memory _ipfsHash, uint256 _price, ContentType _contentType) public onlyCreator(_id) {
-        bytes32 contentHash = keccak256(abi.encodePacked(_ipfsHash));
-        require(!existingContentHashes[contentHash] || keccak256(abi.encodePacked(contents[_id].ipfsHash)) == keccak256(abi.encodePacked(_ipfsHash)), "Similar content already exists.");
-        Content storage content = contents[_id];
-        content.title = _title;
-        content.description = _description;
-        content.ipfsHash = _ipfsHash;
-        content.price = _price;
-        content.contentType = _contentType;
-        if (keccak256(abi.encodePacked(content.ipfsHash)) != keccak256(abi.encodePacked(_ipfsHash))) {
-            existingContentHashes[keccak256(abi.encodePacked(content.ipfsHash))] = false;
-            existingContentHashes[contentHash] = true;
+    
+    function submitContentForReview(
+            string memory _title,
+            string memory _description,
+            string memory _ipfsHash,
+            uint256 _price,
+            ContentType _contentType,
+            Permission memory _permissions
+        ) public {
+            require(bytes(_ipfsHash).length > 0, "IPFS hash is required");
+
+            contentCount++;
+            contents[contentCount] = Content(
+                contentCount,
+                msg.sender,
+                _title,
+                _description,
+                _ipfsHash,
+                _price,
+                false,
+                _contentType,
+                ContentStatus.Pending,
+                _permissions
+            );
+
+            emit ContentSubmitted(
+                contentCount,
+                msg.sender,
+                _title,
+                _description,
+                _ipfsHash,
+                _price,
+                _contentType
+            );
         }
+
+    function approveContent(uint256 _id, string memory _ipfsHash) public onlyOwner {
+        Content storage content = contents[_id];
+        require(content.status == ContentStatus.Pending, "Content is not pending approval.");
+
+        bytes32 contentHash = keccak256(abi.encodePacked(_ipfsHash));
+        require(!existingContentHashes[contentHash], "Similar content already exists.");
+
+        content.ipfsHash = _ipfsHash;
+        content.isActive = true;
+        content.status = ContentStatus.Approved;
+        existingContentHashes[contentHash] = true;
+
+        emit ContentApproved(_id, msg.sender);
+        emit ContentCreated(_id, content.creator, content.title, content.description, _ipfsHash, content.price, content.contentType);
     }
+
+    function rejectContent(uint256 _id) public onlyOwner {
+        Content storage content = contents[_id];
+        require(content.status == ContentStatus.Pending, "Content is not pending approval.");
+        content.status = ContentStatus.Rejected;
+        emit ContentRejected(_id, msg.sender);
+    }
+
+    
 
     function getContent(uint256 _id) public view returns (Content memory) {
         return contents[_id];
     }
 
-    function deleteContent(uint256 _id) public onlyCreator(_id) {
-        require(contents[_id].isActive, "Content is already inactive.");
-        contents[_id].isActive = false;
-        emit ContentDeleted(_id, msg.sender);
-    }
-
+    
     function toggleContentStatus(uint256 _id) public onlyCreator(_id) {
         contents[_id].isActive = !contents[_id].isActive;
     }
@@ -76,8 +139,10 @@ contract ContentPlatform {
         require(content.isActive, "This content is not available for purchase.");
         require(msg.value >= content.price, "Insufficient funds to purchase this content.");
         require(!contentPurchases[msg.sender][_id], "You have already purchased this content.");
+
         contentPurchases[msg.sender][_id] = true;
         payable(content.creator).transfer(content.price);
+
         emit ContentPurchased(_id, msg.sender, content.creator, content.ipfsHash, content.price);
     }
 
@@ -134,4 +199,102 @@ contract ContentPlatform {
         }
         return purchasedContents;
     }
+
+    function getPendingContents() public view returns (Content[] memory) {
+        uint256 pendingContentCount = 0;
+        for (uint256 i = 1; i <= contentCount; i++) {
+            if (contents[i].status == ContentStatus.Pending) {
+                pendingContentCount++;
+            }
+        }
+        Content[] memory pendingContents = new Content[](pendingContentCount);
+        uint256 index = 0;
+        for (uint256 i = 1; i <= contentCount; i++) {
+            if (contents[i].status == ContentStatus.Pending) {
+                pendingContents[index] = contents[i];
+                index++;
+            }
+        }
+        return pendingContents;
+    }
+
+    function getApprovedContents() public view returns (Content[] memory) {
+        uint256 approvedContentCount = 0;
+        for (uint256 i = 1; i <= contentCount; i++) {
+            if (contents[i].status == ContentStatus.Approved) {
+                approvedContentCount++;
+            }
+        }
+        Content[] memory approvedContents = new Content[](approvedContentCount);
+        uint256 index = 0;
+        for (uint256 i = 1; i <= contentCount; i++) {
+            if (contents[i].status == ContentStatus.Approved) {
+                approvedContents[index] = contents[i];
+                index++;
+            }
+        }
+        return approvedContents;
+    }
+
+    function getRejectedContents() public view returns (Content[] memory) {
+        uint256 rejectedContentCount = 0;
+        for (uint256 i = 1; i <= contentCount; i++) {
+            if (contents[i].status == ContentStatus.Rejected) {
+                rejectedContentCount++;
+            }
+        }
+        Content[] memory rejectedContents = new Content[](rejectedContentCount);
+        uint256 index = 0;
+        for (uint256 i = 1; i <= contentCount; i++) {
+            if (contents[i].status == ContentStatus.Rejected) {
+                rejectedContents[index] = contents[i];
+                index++;
+            }
+        }
+        return rejectedContents;
+    }
+
+    function getContentPermissions(uint256 _id) public view returns (Permission memory) {
+        return contents[_id].permissions;
+    }
+
+    function getSoldContentsAndIncome(address _creator) public view returns (Content[] memory, uint256) {
+        uint256 soldContentCount = 0;
+        uint256 totalIncome = 0;
+
+        for (uint256 i = 1; i <= contentCount; i++) {
+            if (contents[i].creator == _creator) {
+                for (uint256 j = 1; j <= contentCount; j++) {
+                    if (contentPurchases[address(uint160(j))][i]) {
+                        soldContentCount++;
+                        totalIncome += contents[i].price;
+                        break;  
+                    }
+                }
+            }
+        }
+
+        Content[] memory soldContents = new Content[](soldContentCount);
+        uint256 index = 0;
+
+        for (uint256 i = 1; i <= contentCount; i++) {
+            if (contents[i].creator == _creator) {
+                for (uint256 j = 1; j <= contentCount; j++) {
+                    if (contentPurchases[address(uint160(j))][i]) {
+                        soldContents[index] = contents[i];
+                        index++;
+                        break; 
+                    }
+                }
+            }
+        }
+
+        return (soldContents, totalIncome);
+    }
 }
+
+
+
+
+
+

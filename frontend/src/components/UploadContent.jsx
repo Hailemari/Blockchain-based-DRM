@@ -1,50 +1,402 @@
-import { useState } from 'react';
-export const UploadContent = () => {
-    const [selectedOption, setSelectedOption] = useState('');
+import { useState, useEffect } from 'react';
+import { ethers } from 'ethers';
+import { submitContentForReview, getCreatorContents, getSoldContentsAndIncome } from '../utils/Interact';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { FaPlus, FaTachometerAlt, FaShoppingCart } from 'react-icons/fa';
+import DisplayContents from './DisplayContents';
+import { create } from 'ipfs-http-client';
 
-    const handleOptionChange = (event) => {
-        setSelectedOption(event.target.value);
-    };
+const ipfs = create({ url: 'http://127.0.0.1:5001/api/v0' });
 
-    const handleSubmit = (event) => {
-        event.preventDefault();
-        // Handle the upload based on the selected option
-        console.log('Selected Option:', selectedOption);
-        // Add your upload logic here
-    };
+function UploadContent() {
+  const [file, setFile] = useState(null);
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [price, setPrice] = useState('');
+  const [contentType, setContentType] = useState('0');
+  const [ipfsHashes, setIpfsHashes] = useState([]);
+  const [provider, setProvider] = useState(null);
+  const [account, setAccount] = useState('');
+  const [contents, setContents] = useState([]);
+  const [filteredContents, setFilteredContents] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [salesData, setSalesData] = useState({ soldContents: [], totalIncome: '0' });
 
-    return (
-        <div>
-            <form onSubmit={handleSubmit}>
-                <label>
-                    <input
-                        type="radio"
-                        value="ebook"
-                        checked={selectedOption === 'ebook'}
-                        onChange={handleOptionChange}
-                    />
-                    Ebook
-                </label>
-                <label>
-                    <input
-                        type="radio"
-                        value="video"
-                        checked={selectedOption === 'video'}
-                        onChange={handleOptionChange}
-                    />
-                    Video
-                </label>
-                <label>
-                    <input
-                        type="radio"
-                        value="music"
-                        checked={selectedOption === 'music'}
-                        onChange={handleOptionChange}
-                    />
-                    Music
-                </label>
-                <button type="submit">Upload</button>
-            </form>
-        </div>
+  const [viewOnly, setViewOnly] = useState(false);
+  const [download, setDownload] = useState(false);
+
+  const [validationErrors, setValidationErrors] = useState({});
+
+  const connectToMetaMask = async () => {
+    if (typeof window.ethereum !== 'undefined') {
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const newProvider = new ethers.providers.Web3Provider(window.ethereum);
+        setProvider(newProvider);
+        setAccount(accounts[0]);
+      } catch (error) {
+        console.error('Error connecting to MetaMask:', error);
+        toast.error('Error connecting to MetaMask');
+      }
+    } else {
+      console.error('MetaMask not found. Please install MetaMask.');
+      toast.error('MetaMask not found. Please install MetaMask.');
+    }
+  };
+
+  useEffect(() => {
+    if (typeof window.ethereum !== 'undefined') {
+      window.ethereum.request({ method: 'eth_accounts' })
+        .then(accounts => {
+          if (accounts.length > 0) {
+            const newProvider = new ethers.providers.Web3Provider(window.ethereum);
+            setProvider(newProvider);
+            setAccount(accounts[0]);
+          }
+        })
+        .catch(error => console.error('Error fetching accounts:', error));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (account) {
+      fetchCreatorContents();
+    }
+  }, [account]);
+
+  const fetchCreatorContents = async () => {
+    try {
+      const contents = await getCreatorContents();
+      setContents(contents);
+      setFilteredContents(contents);
+      setIpfsHashes(contents.map(content => content.ipfsHash)); 
+    } catch (error) {
+      console.error('Error fetching creator contents:', error);
+      toast.error('Error fetching creator contents');
+    }
+  };
+  
+  const fetchSalesData = async () => {
+    try {
+      const data = await getSoldContentsAndIncome(account);
+      console.log('Sales data:', data);
+      setSalesData(data);
+    } catch (error) {
+      console.error('Error fetching sales data:', error);
+      toast.error('Error fetching sales data');
+    }
+  };
+
+  const handleFileChange = (event) => {
+    setFile(event.target.files[0]);
+  };
+
+  const handleUpload = async () => {
+    if (!provider) {
+      toast.error('Please connect to MetaMask first.');
+      return;
+    }
+  
+    let errors = {};
+  
+    if (!title.trim()) {
+      errors.title = 'Title is required';
+    }
+    if (!description.trim()) {
+      errors.description = 'Description is required';
+    }
+    if (!price.trim()) {
+      errors.price = 'Price is required';
+    } else if (isNaN(parseFloat(price))) {
+      errors.price = 'Price must be a valid number';
+    } else if (parseFloat(price) <= 0) {
+      errors.price = 'Price must be greater than 0';
+    }
+    if (!file) {
+      errors.file = 'File is required';
+    }
+  
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      toast.error('Please correct the errors in the form');
+      return;
+    }
+  
+    setValidationErrors({});
+  
+    try {
+      const added = await ipfs.add(file);
+      const ipfsHash = added.path;
+  
+      if (ipfsHashes.includes(ipfsHash)) {
+        console.log('duplicate file')
+        toast.error('This file has already been uploaded.');
+        return;
+      }
+  
+      const permissions = {
+        viewOnly,
+        download
+      };
+  
+      const result = await submitContentForReview(title, description, ipfsHash, price, contentType, permissions);
+      if (result.success) {
+        toast.success('Content submitted for review successfully!');
+        setIpfsHashes([...ipfsHashes, ipfsHash]); 
+        fetchCreatorContents();
+      } else {
+        toast.error(result.message || 'Error submitting content');
+      }
+    } catch (error) {
+      toast.error('Error submitting content for review');
+      console.error('Error submitting content for review:', error);
+    }
+  };
+  
+
+  const handleSearch = (event) => {
+    setSearchQuery(event.target.value);
+    const filtered = contents.filter(content =>
+      content.title.toLowerCase().includes(event.target.value.toLowerCase()) ||
+      content.description.toLowerCase().includes(event.target.value.toLowerCase())
     );
-};
+    setFilteredContents(filtered);
+  };
+
+  const handleFilter = (type) => {
+    if (type === "") {
+      setFilteredContents(contents);
+    } else {
+      const filtered = contents.filter(content => content.contentType.toString() === type.toString());
+      setFilteredContents(filtered);
+    }
+  };
+
+  const handleShowManageContent = () => {
+    setActiveTab('manage');
+  };
+
+  const handleShowDashboard = () => {
+    setActiveTab('dashboard');
+    fetchCreatorContents();
+  };
+
+  const handleShowUploadForm = () => {
+    setActiveTab('upload');
+  };
+
+  const handleShowSales = () => {
+    setActiveTab('sales');
+    fetchSalesData();
+  };
+
+  return (
+    <div className="flex h-screen bg-gray-100">
+      <div className="w-1/6 bg-gray-900 p-4 flex flex-col items-center justify-center shadow-lg">
+        <h2 className="text-2xl font-bold mb-4 hidden lg:block text-white">DRM</h2>
+        <button
+          className={`w-full font-bold py-2 px-4 rounded-lg flex items-center justify-center space-x-4 transition duration-300 ${activeTab === 'dashboard' ? 'bg-gray-700 text-white' : 'bg-gray-900 text-white hover:bg-gray-700'}`}
+          onClick={handleShowDashboard}
+        >
+          <FaTachometerAlt className="text-green-500" />
+          <span className="hidden lg:inline">Dashboard</span>
+        </button>
+        <button
+          className={`w-full font-bold py-2 px-4 rounded-lg flex items-center justify-center mt-4 space-x-4 transition duration-300 ${activeTab === 'manage' ? 'bg-gray-700 text-white' : 'bg-gray-900 text-white hover:bg-gray-700'}`}
+          onClick={handleShowManageContent}
+        >
+          <FaPlus className="text-green-500" />
+          <span className="hidden lg:inline">Manage Content</span>
+        </button>
+        <button
+          className={`w-full font-bold py-2 px-4 rounded-lg flex items-center justify-center mt-4 space-x-4 transition duration-300 ${activeTab === 'sales' ? 'bg-gray-700 text-white' : 'bg-gray-900 text-white hover:bg-gray-700'}`}
+          onClick={handleShowSales}
+        >
+          <FaShoppingCart className="text-green-500" />
+          <span className="hidden lg:inline">Sales</span>
+        </button>
+      </div>
+
+      <div className="w-5/6 p-8 bg-gray-50 overflow-y-auto">
+        {!account ? (
+          <div className="flex justify-center items-center h-full">
+            <button
+              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg"
+              onClick={connectToMetaMask}
+            >
+              Connect Wallet
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="flex justify-between items-center mb-8">
+              <div className="max-w-lg mx-auto flex-1">
+                <input
+                  className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  type="text"
+                  placeholder="Search contents..."
+                  value={searchQuery}
+                  onChange={handleSearch}
+                />
+              </div>
+              <select
+                className="bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-lg ml-4 focus:outline-none"
+                onChange={(e) => handleFilter(e.target.value)}
+              >
+                <option value="">All Content</option>
+                <option value="0">Ebook</option>
+                <option value="1">Video</option>
+                <option value="2">Music</option>
+              </select>
+            </div>
+
+            {activeTab === 'manage' ? (
+              <div className="flex flex-col justify-center items-center h-full">
+                <button
+                  className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full flex items-center justify-center text-4xl mb-2 transition duration-300"
+                  style={{ transform: 'translateY(-50%)' }}
+                  onClick={handleShowUploadForm}
+                >
+                  <FaPlus />
+                </button>
+                <span className="text-xl text-green-700">Add Content</span>
+              </div>
+            ) : activeTab === 'upload' ? (
+              <div className="max-w-lg mx-auto bg-white shadow-md rounded-lg px-8 pt-6 pb-8 mb-4">
+                <h2 className="text-2xl mb-6 font-bold text-center text-gray-800">Upload Content</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="mb-4">
+                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="title">
+                      Title
+                    </label>
+                    <input
+                      className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                      id="title"
+                      type="text"
+                      placeholder="Title"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                    />
+                    {validationErrors.title && <p className="text-red-500 text-xs italic">{validationErrors.title}</p>}
+                  </div>
+                  <div className="mb-4">
+                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="price">
+                      Price
+                    </label>
+                    <input
+                      className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                      id="price"
+                      type="text"
+                      placeholder="Price in ETH"
+                      value={price}
+                      onChange={(e) => setPrice(e.target.value)}
+                    />
+                    {validationErrors.price && <p className="text-red-500 text-xs italic">{validationErrors.price}</p>}
+                  </div>
+                </div>
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="description">
+                    Description
+                  </label>
+                  <textarea
+                    className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    id="description"
+                    placeholder="Description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                  ></textarea>
+                  {validationErrors.description && <p className="text-red-500 text-xs italic">{validationErrors.description}</p>}
+                </div>
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="file">
+                    File
+                  </label>
+                  <input
+                    className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    id="file"
+                    type="file"
+                    onChange={handleFileChange}
+                  />
+                  {validationErrors.file && <p className="text-red-500 text-xs italic">{validationErrors.file}</p>}
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="mb-4">
+                    <label className="block text-gray-700 text-sm font-bold mb-2">
+                      Content Type
+                    </label>
+                    <select
+                      className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                      value={contentType}
+                      onChange={(e) => setContentType(e.target.value)}
+                    >
+                      <option value="0">Ebook</option>
+                      <option value="1">Video</option>
+                      <option value="2">Music</option>
+                    </select>
+                  </div>
+                  <div className="mb-4">
+                    <label className="block text-gray-700 text-sm font-bold mb-2">
+                      Permissions
+                    </label>
+                    <div className="flex items-center mb-2">
+                      <input
+                        type="checkbox"
+                        id="viewOnly"
+                        checked={viewOnly}
+                        onChange={(e) => setViewOnly(e.target.checked)}
+                        className="mr-2"
+                      />
+                      <label htmlFor="viewOnly" className="text-gray-700">View Only</label>
+                    </div>
+                    <div className="flex items-center mb-2">
+                      <input
+                        type="checkbox"
+                        id="download"
+                        checked={download}
+                        onChange={(e) => setDownload(e.target.checked)}
+                        className="mr-2"
+                      />
+                      <label htmlFor="download" className="text-gray-700">Download</label>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <button
+                    className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline"
+                    type="button"
+                    onClick={handleUpload}
+                  >
+                    Upload
+                  </button>
+                </div>
+              </div>
+            ) : activeTab === 'dashboard' ? (
+              <DisplayContents contents={filteredContents} />
+            ) : activeTab === 'sales' ? (
+              <div className="bg-white shadow-md rounded-lg p-6">
+                <h2 className="text-2xl font-bold mb-6 text-gray-800">Sales Data</h2>
+                <div className="mb-6">
+                  <h3 className="text-xl font-semibold">Total Income: <span className="text-green-500">{salesData.totalIncome} ETH</span></h3>
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold mb-4">Sold Contents</h3>
+                  {salesData.soldContents.map((content, index) => (
+                    <div key={index} className="mb-4 p-4 bg-gray-50 rounded-lg shadow-inner">
+                      <h4 className="text-lg font-bold text-gray-800">{content.title}</h4>
+                      <p className="text-gray-600">{content.description}</p>
+                      <p className="text-gray-800"><strong>Sold for:</strong> <span className="text-green-500">{content.price} ETH</span></p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default UploadContent;

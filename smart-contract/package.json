@@ -3,10 +3,11 @@
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",
     "chai": "^4.4.1",
-    "hardhat": "^2.22.2"
+    "hardhat": "^2.22.5"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.9.6",
+    "dotenv": "^16.4.5",
     "ethers": "^6.11.1"
   }
 }

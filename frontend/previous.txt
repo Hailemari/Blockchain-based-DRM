@@ -1,0 +1,1039 @@
+import { useState, useEffect } from 'react';
+import { ethers } from 'ethers';
+import { getAvailableContents, purchaseContent, getPurchasedContents } from '../utils/Interact';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { FaBook, FaVideo, FaMusic, FaTimes } from 'react-icons/fa';
+import bookCoverImage from '../assets/images/book_cover.jpg';
+import videoImage from '../assets/images/video.jpg';
+import musicImage from '../assets/images/music.jpg';
+
+const ContentType = {
+  0: 'Ebook',
+  1: 'Video',
+  2: 'Music',
+};
+
+const PurchaseContent = () => {
+  const [contents, setContents] = useState([]);
+  const [filteredContents, setFilteredContents] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [provider, setProvider] = useState(null);
+  const [account, setAccount] = useState('');
+  const [selectedContent, setSelectedContent] = useState(null);
+  const [purchasedContents, setPurchasedContents] = useState(new Set());
+
+  useEffect(() => {
+    if (typeof window.ethereum !== 'undefined') {
+      window.ethereum.request({ method: 'eth_accounts' })
+        .then(accounts => {
+          if (accounts.length > 0) {
+            const newProvider = new ethers.providers.Web3Provider(window.ethereum);
+            setProvider(newProvider);
+            setAccount(accounts[0]);
+          }
+        })
+        .catch(error => console.error('Error fetching accounts:', error));
+    } else {
+      console.log('No Ethereum provider detected.');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (account) {
+      fetchPurchasedContents();
+      fetchAvailableContents();
+    }
+  }, [account]);
+
+  const fetchAvailableContents = async () => {
+    try {
+      const contents = await getAvailableContents();
+      setContents(contents);
+      setFilteredContents(contents);
+    } catch (error) {
+      console.error('Error fetching contents:', error);
+    }
+  };
+
+  const fetchPurchasedContents = async () => {
+    if (!account) return;
+    try {
+      const purchased = await getPurchasedContents(account);
+      const purchasedSet = new Set(purchased.map(content => content.id));
+      setPurchasedContents(purchasedSet);
+    } catch (error) {
+      console.error('Error fetching purchased contents:', error);
+    }
+  };
+
+  const handleSearch = (event) => {
+    setSearchQuery(event.target.value);
+    const filtered = contents.filter(content =>
+      content.title.toLowerCase().includes(event.target.value.toLowerCase()) ||
+      content.description.toLowerCase().includes(event.target.value.toLowerCase())
+    );
+    setFilteredContents(filtered);
+  };
+
+  const handleFilter = (type) => {
+    if (type === 'all') {
+      setFilteredContents(contents);
+    } else {
+      const filtered = contents.filter(content => content.contentType.toString() === type.toString());
+      setFilteredContents(filtered);
+    }
+  };
+
+  const handlePurchase = async (contentId, priceInEth) => {
+    console.log('Attempting to purchase content:', contentId, 'Price:', priceInEth);
+    if (purchasedContents.has(contentId)) {
+      toast.error('You have already purchased this content.');
+      console.log('Content already purchased:', contentId);
+      return;
+    }
+
+    try {
+      if (!provider) {
+        toast.error('Please connect to MetaMask first.');
+        console.log('No provider available.');
+        return;
+      }
+
+      const tx = await purchaseContent(contentId, { value: ethers.utils.parseUnits(priceInEth, 'ether') });
+      await tx.wait();
+      toast.success('Content purchased successfully');
+      setPurchasedContents(new Set([...purchasedContents, contentId]));
+      console.log('Content purchased successfully:', contentId);
+    } catch (error) {
+      if (error.message.includes('already purchased')) {
+        toast.error('You have already purchased this content.');
+        setPurchasedContents(new Set([...purchasedContents, contentId]));
+      } else {
+        toast.error('Error purchasing content');
+      }
+      console.error('Error purchasing content:', error);
+    }
+  };
+
+  const handleContentClick = (content) => {
+    setSelectedContent(content);
+  };
+
+  const renderContentPlayer = () => {
+    if (!selectedContent) return null;
+
+    const ipfsUrl = `http://127.0.0.1:8081/ipfs/${selectedContent.ipfsHash}`;
+
+    switch (selectedContent.contentType) {
+      case 0:
+        return <iframe src={ipfsUrl} width="100%" height="100%" title={selectedContent.title} className="rounded border" />;
+      case 1:
+        return (
+          <video width="100%" height="100%" controls className="rounded border">
+            <source src={ipfsUrl} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        );
+      case 2:
+        return (
+          <audio controls className="w-full">
+            <source src={ipfsUrl} type="audio/mpeg" />
+            Your browser does not support the audio element.
+          </audio>
+        );
+      default:
+        return <p className="text-red-500">Unsupported content type</p>;
+    }
+  };
+
+  const getImageForContentType = (contentType) => {
+    switch (contentType) {
+      case 0:
+        return bookCoverImage;
+      case 1:
+        return videoImage;
+      case 2:
+        return musicImage;
+      default:
+        return bookCoverImage;
+    }
+  };
+
+  return (
+    <div className="flex h-screen">
+      <div className="w-1/6 bg-gray-100 p-4 flex flex-col items-center justify-center shadow-lg">
+        <h2 className="text-xl font-bold mb-4">Filter Contents</h2>
+        <button
+          className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4 flex items-center justify-center transition duration-300 transform hover:scale-105"
+          onClick={() => handleFilter('all')}
+        >
+          All
+        </button>
+        <button
+          className="w-full bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mb-4 flex items-center justify-center transition duration-300 transform hover:scale-105"
+          onClick={() => handleFilter('0')}
+        >
+          <FaBook className="mr-2" /> Ebook
+        </button>
+        <button
+          className="w-full bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mb-4 flex items-center justify-center transition duration-300 transform hover:scale-105"
+          onClick={() => handleFilter('1')}
+        >
+          <FaVideo className="mr-2" /> Video
+        </button>
+        <button
+          className="w-full bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mb-4 flex items-center justify-center transition duration-300 transform hover:scale-105"
+          onClick={() => handleFilter('2')}
+        >
+          <FaMusic className="mr-2" /> Music
+        </button>
+      </div>
+      <div className="w-5/6 p-8 bg-gray-50 overflow-y-auto">
+        <div className="max-w-lg mx-auto mb-8">
+          <input
+            className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline transition duration-300 transform hover:scale-105"
+            type="text"
+            placeholder="Search contents..."
+            value={searchQuery}
+            onChange={handleSearch}
+          />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredContents.map(content => (
+            <div key={content.id} className="bg-white shadow-md rounded-lg p-6 transition duration-300 transform hover:scale-105">
+              <img 
+                src={getImageForContentType(content.contentType)} 
+                alt={content.title} 
+                className="mb-4 w-full h-48 object-cover rounded-lg" 
+              />
+              <h3 className="text-lg font-bold mb-2">{content.title}</h3>
+              <p className="text-gray-700 mb-2">{content.description}</p>
+              <p className="text-gray-700 mb-2">Price: {content.price} ETH</p>
+              <p className="text-gray-700 mb-2">Content Type: {ContentType[content.contentType]}</p>
+              <div className="flex space-x-4">
+                <button
+                  className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300 transform hover:scale-105 ${purchasedContents.has(content.id) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  onClick={() => handlePurchase(content.id, content.price)}
+                  disabled={purchasedContents.has(content.id)}
+                >
+                  {purchasedContents.has(content.id) ? 'Purchased' : 'Purchase'}
+                </button>
+                <button
+                  className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-300 transform hover:scale-105"
+                  onClick={() => handleContentClick(content)}
+                  disabled={!purchasedContents.has(content.id)}
+                >
+                  View
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      {selectedContent && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-4xl w-full h-3/4 overflow-y-auto">
+            <button
+              className="text-red-500 hover:text-red-700 absolute top-2 right-2"
+              onClick={() => setSelectedContent(null)}
+            >
+              <FaTimes size={24} />
+            </button>
+            <h2 className="text-2xl font-bold mb-4">{selectedContent.title}</h2>
+            <div className="w-full h-full">{renderContentPlayer()}</div>
+          </div>
+        </div>
+      )}
+      <ToastContainer />
+    </div>
+  );
+};
+
+export default PurchaseContent;
+
+
+// Interact.js
+import { ethers } from 'ethers';
+import ContentPlatform from './ContentPlatform.json';
+
+const contractAddress = '0x3AaBBa473D092A2d759017346a4eF306F7e1fe4f';
+
+const getProvider = () => {
+  if (typeof window.ethereum !== 'undefined') {
+    return new ethers.providers.Web3Provider(window.ethereum);
+  } else {
+    throw new Error('Ethereum object not found, install MetaMask.');
+  }
+};
+
+const getSigner = async () => {
+  const provider = getProvider();
+  const signer = provider.getSigner();
+  return signer;
+};
+
+const getContract = async () => {
+  try {
+    const signer = await getSigner();
+    return new ethers.Contract(contractAddress, ContentPlatform.abi, signer);
+  } catch (error) {
+    console.error('Error getting contract:', error);
+    throw error;
+  }
+};
+
+export const getPendingContents = async () => {
+  try {
+    const contract = await getContract();
+    const contents = await contract.getPendingContents();
+    return contents.map(content => ({
+      id: content.id.toNumber(),
+      creator: content.creator,
+      title: content.title,
+      description: content.description,
+      ipfsHash: content.ipfsHash, // Ensure ipfsHash is included
+      price: ethers.utils.formatEther(content.price),
+      isActive: content.isActive,
+      contentType: parseInt(content.contentType),
+    }));
+  } catch (error) {
+    console.error('Error fetching pending contents:', error);
+    throw error;
+  }
+};
+
+
+
+
+export const submitContentForReview = async (title, description, ipfsHash, price, contentType) => {
+  try {
+    const contract = await getContract();
+    const tx = await contract.submitContentForReview(title, description, ipfsHash, ethers.utils.parseEther(price), contentType);
+    await tx.wait();
+    return { success: true };
+  } catch (error) {
+    console.error('Error submitting content for review:', error);
+    return { success: false, message: error.message };
+  }
+};
+
+
+
+const checkContentExists = async (ipfsHash) => {
+  const contract = await getContract();
+  const [exists] = await contract.getContentByHash(ipfsHash);
+  return exists;
+};
+
+export const createContent = async (title, description, ipfsHash, price, contentType) => {
+  try {
+    console.log('Creating content:', title, description, ipfsHash, price, contentType)
+    const contract = await getContract();
+    console.log('Checking content exists:', ipfsHash);
+    const contentExists = await checkContentExists(ipfsHash);
+    if (contentExists) {
+      return { success: false, message: 'Content already exists' };
+    }
+    console.log('Creating content:', title, description, ipfsHash, price, contentType)
+    const tx = await contract.createContent(title, description, ipfsHash, ethers.utils.parseEther(price), contentType);
+    console.log('price', ethers.utils.parseEther(price))
+    console.log('Transaction:', tx)
+    await tx.wait();
+    return { success: true };
+  } catch (error) {
+    console.error('Error creating content:', error);
+    return { success: false, message: error.message };
+  }
+};
+
+
+
+export const purchaseContent = async (id, options) => {
+  try {
+    const contract = await getContract();
+    console.log('Purchasing content:', id, options)
+    const tx = await contract.purchaseContent(id, options);
+    await tx.wait();
+  } catch (error) {
+    console.error('Error purchasing content:', error);
+    throw error;
+  }
+};
+
+export const getCreatorContents = async () => {
+  try {
+    const signer = await getSigner();
+    const creatorAddress = await signer.getAddress(); 
+    const contract = await getContract();
+    const contents = await contract.getCreatorContents(creatorAddress);
+    return contents.map(content => ({
+      id: content.id.toNumber(),
+      creator: content.creator,
+      title: content.title,
+      description: content.description,
+      ipfsHash: content.ipfsHash,
+      price: ethers.utils.formatEther(content.price),
+      isActive: content.isActive,
+      contentType: parseInt(content.contentType),
+    }));
+  } catch (error) {
+    console.error('Error fetching creator contents:', error);
+    throw error;
+  }
+};
+
+
+
+export const getAvailableContents = async () => {
+  try {
+    const contract = await getContract();
+    const contents = await contract.getAvailableContents();
+    return contents.map(content => ({
+      id: content.id.toNumber(),
+      creator: content.creator,
+      title: content.title,
+      description: content.description,
+      ipfsHash: content.ipfsHash,
+      price: ethers.utils.formatEther(content.price),
+      isActive: content.isActive,
+      contentType: parseInt(content.contentType),
+    }));
+  } catch (error) {
+    console.error('Error fetching available contents:', error);
+    throw error;
+  }
+};
+
+
+
+
+
+export const getPurchasedContents = async (account) => {
+  const contract = getContract();
+  if (!contract) throw new Error('Contract not found');
+  const contents = await contract.getPurchasedContents(account);
+  return contents.map(content => ({
+    id: content.id.toNumber(),
+    creator: content.creator,
+    title: content.title,
+    description: content.description,
+    ipfsHash: content.ipfsHash,
+    price: ethers.utils.formatEther(content.price),
+    isActive: content.isActive,
+    contentType: content.contentType,
+  }));
+};
+
+
+
+
+
+export const approveContent = async (id, ipfsHash) => {
+  try {
+    const contract = await getContract();
+    const tx = await contract.approveContent(id, ipfsHash);
+    await tx.wait();
+  } catch (error) {
+    console.error('Error approving content:', error);
+    throw error;
+  }
+};
+
+export const rejectContent = async (id) => {
+  try {
+    const contract = await getContract();
+    const tx = await contract.rejectContent(id);
+    await tx.wait();
+  } catch (error) {
+    console.error('Error rejecting content:', error);
+    throw error;
+  }
+};
+
+
+
+export const getSoldContentsAndIncome = async (creator) => {
+  try {
+    const contract = await getContract();
+    const [soldContents, totalIncome] = await contract.getSoldContentsAndIncome(creator);
+    return {
+      soldContents: soldContents.map(content => ({
+        id: content.id.toNumber(),
+        creator: content.creator,
+        title: content.title,
+        description: content.description,
+        ipfsHash: content.ipfsHash,
+        price: ethers.utils.formatEther(content.price),
+        isActive: content.isActive,
+        contentType: parseInt(content.contentType),
+      })),
+      totalIncome: ethers.utils.formatEther(totalIncome)
+    };
+  } catch (error) {
+    console.error('Error fetching sold contents and income:', error);
+    throw error;
+  }
+};
+
+
+
+import { useState, useEffect } from 'react';
+import { ethers } from 'ethers';
+import { submitContentForReview, getCreatorContents, getSoldContentsAndIncome } from '../utils/Interact';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { FaPlus, FaTachometerAlt, FaShoppingCart } from 'react-icons/fa';
+import DisplayContents from './DisplayContents';
+import { create } from 'ipfs-http-client';
+
+const ipfs = create({ url: 'http://127.0.0.1:5001/api/v0' });
+
+function UploadContent() {
+  const [file, setFile] = useState(null);
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [price, setPrice] = useState('');
+  const [contentType, setContentType] = useState('0');
+  const [provider, setProvider] = useState(null);
+  const [account, setAccount] = useState('');
+  const [contents, setContents] = useState([]);
+  const [filteredContents, setFilteredContents] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [salesData, setSalesData] = useState({ soldContents: [], totalIncome: '0' });
+
+  const connectToMetaMask = async () => {
+    if (typeof window.ethereum !== 'undefined') {
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const newProvider = new ethers.providers.Web3Provider(window.ethereum);
+        setProvider(newProvider);
+        setAccount(accounts[0]);
+      } catch (error) {
+        console.error('Error connecting to MetaMask:', error);
+      }
+    } else {
+      console.error('MetaMask not found. Please install MetaMask.');
+    }
+  };
+
+  useEffect(() => {
+    if (typeof window.ethereum !== 'undefined') {
+      window.ethereum.request({ method: 'eth_accounts' })
+        .then(accounts => {
+          if (accounts.length > 0) {
+            const newProvider = new ethers.providers.Web3Provider(window.ethereum);
+            setProvider(newProvider);
+            setAccount(accounts[0]);
+          }
+        })
+        .catch(error => console.error('Error fetching accounts:', error));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (account) {
+      fetchCreatorContents();
+    }
+  }, [account]);
+
+  const fetchCreatorContents = async () => {
+    try {
+      const contents = await getCreatorContents();
+      setContents(contents);
+      setFilteredContents(contents);
+    } catch (error) {
+      console.error('Error fetching creator contents:', error);
+    }
+  };
+
+  const fetchSalesData = async () => {
+    try {
+      const data = await getSoldContentsAndIncome(account);
+      setSalesData(data);
+    } catch (error) {
+      console.error('Error fetching sales data:', error);
+    }
+  };
+
+  const handleFileChange = (event) => {
+    setFile(event.target.files[0]);
+  };
+
+  const handleUpload = async () => {
+    if (!provider) {
+      toast.error('Please connect to MetaMask first.');
+      return;
+    }
+
+    if (!title.trim() || !description.trim() || !price.trim() || !file) {
+      toast.error('Please fill in all fields and select a file');
+      return;
+    }
+
+    if (isNaN(parseFloat(price))) {
+      toast.error('Price must be a valid number');
+      return;
+    }
+
+    const parsedPrice = parseFloat(price);
+
+    if (parsedPrice <= 0) {
+      toast.error('Price must be greater than 0');
+      return;
+    }
+
+    try {
+      const added = await ipfs.add(file);
+      const ipfsHash = added.path;
+
+      const result = await submitContentForReview(title, description, ipfsHash, parsedPrice.toString(), contentType);
+      if (result.success) {
+        toast.success('Content submitted for review successfully!');
+        fetchCreatorContents();
+      } else {
+        toast.error(result.message || 'Error submitting content');
+      }
+    } catch (error) {
+      toast.error('Error submitting content for review');
+      console.error('Error submitting content for review:', error);
+    }
+  };
+
+  const handleSearch = (event) => {
+    setSearchQuery(event.target.value);
+    const filtered = contents.filter(content =>
+      content.title.toLowerCase().includes(event.target.value.toLowerCase()) ||
+      content.description.toLowerCase().includes(event.target.value.toLowerCase())
+    );
+    setFilteredContents(filtered);
+  };
+
+  const handleFilter = (type) => {
+    if (type === "") {
+      setFilteredContents(contents);
+    } else {
+      const filtered = contents.filter(content => content.contentType.toString() === type.toString());
+      setFilteredContents(filtered);
+    }
+  };
+
+  const handleShowManageContent = () => {
+    setActiveTab('manage');
+  };
+
+  const handleShowDashboard = () => {
+    setActiveTab('dashboard');
+    fetchCreatorContents();
+  };
+
+  const handleShowUploadForm = () => {
+    setActiveTab('upload');
+  };
+
+  const handleShowSales = () => {
+    setActiveTab('sales');
+    fetchSalesData();
+  };
+
+  return (
+    <div className="flex h-screen">
+      <div className="w-1/6 bg-gray-900 p-4 flex flex-col items-center justify-center shadow-lg">
+        <h2 className="text-xl font-bold mb-4 hidden lg:block text-white">DRM</h2>
+        <button className={`w-full font-bold py-2 px-4 rounded flex items-center justify-center space-x-4 ${activeTab === 'dashboard' ? 'bg-gray-500 text-white' : 'bg-gray-900 text-white hover:bg-gray-700'}`} onClick={handleShowDashboard}>
+          <FaTachometerAlt className="text-green-500" />
+          <span className="hidden lg:inline">Dashboard</span>
+        </button>
+        <button className={`w-full font-bold py-2 px-4 rounded flex items-center justify-center mt-4 space-x-4 ${activeTab === 'manage' ? 'bg-gray-500 text-white' : 'bg-gray-900 text-white hover:bg-gray-700'}`} onClick={handleShowManageContent}>
+          <FaPlus className="text-green-500" />
+          <span className="hidden lg:inline">Manage Content</span>
+        </button>
+        <button className={`w-full font-bold py-2 px-4 rounded flex items-center justify-center mt-4 space-x-4 ${activeTab === 'sales' ? 'bg-gray-500 text-white' : 'bg-gray-900 text-white hover:bg-gray-700'}`} onClick={handleShowSales}>
+          <FaShoppingCart className="text-green-500" />
+          <span className="hidden lg:inline">Sales</span>
+        </button>
+      </div>
+
+      {/* Main Content */}
+      <div className="w-5/6 p-8 bg-gray-50">
+        {/* Filter Dropdown */}
+        <div className="flex justify-between items-center mb-8">
+          <div className="max-w-lg mx-auto flex-1">
+            <input
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              type="text"
+              placeholder="Search contents..."
+              value={searchQuery}
+              onChange={handleSearch}
+            />
+          </div>
+          <select
+            className="bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded ml-4"
+            onChange={(e) => handleFilter(e.target.value)}
+          >
+            <option value="">All Content</option>
+            <option value="0">Ebook</option>
+            <option value="1">Video</option>
+            <option value="2">Music</option>
+          </select>
+        </div>
+
+        {activeTab === 'manage' ? (
+          <div className="flex flex-col justify-center items-center h-full">
+            <button
+              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full flex items-center justify-center text-4xl mb-2"
+              style={{ transform: 'translateY(-50%)' }}
+              onClick={handleShowUploadForm}
+            >
+              <FaPlus />
+            </button>
+            <span className="text-xl text-green-700">Add Content</span>
+          </div>
+        ) : activeTab === 'upload' ? (
+          <div className="max-w-lg mx-auto bg-white shadow-md rounded-lg px-8 py-6">
+            <h2 className="text-2xl font-bold mb-6 text-gray-800 text-center">Upload Content</h2>
+            {!provider && (
+              <button
+                className="w-full bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mb-4"
+                onClick={connectToMetaMask}
+              >
+                Connect to MetaMask
+              </button>
+            )}
+            {provider && (
+              <>
+                <input
+                  className="mb-4 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  type="text"
+                  placeholder="Title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)} />
+
+                <input
+                  className="mb-4 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  type="text"
+                  placeholder="Description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)} />
+                <input
+                  className="mb-4 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  type="text"
+                  placeholder="Price (in Birr)"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)} />
+                <select
+                  className="mb-4 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  value={contentType}
+                  onChange={(e) => setContentType(e.target.value)}>
+                  <option value="0">Ebook</option>
+                  <option value="1">Video</option>
+                  <option value="2">Music</option>
+                </select>
+                <input type="file" onChange={handleFileChange} className="mb-4" />
+                <button className="w-full bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" onClick={handleUpload}>
+                  Submit
+                </button>
+              </>
+            )}
+          </div>
+        ) : activeTab === 'sales' ? (
+          <div>
+            <h2 className="text-2xl font-bold mb-6 text-gray-800 text-center">Sales</h2>
+            <div>
+              <h3 className="text-xl font-bold mb-4">Total Income: {salesData.totalIncome} ETH</h3>
+              <ul>
+                {salesData.soldContents.map(content => (
+                  <li key={content.id} className="mb-4 p-4 bg-white shadow rounded-lg">
+                    <h4 className="text-lg font-bold">{content.title}</h4>
+                    <p>{content.description}</p>
+                    <p>Price: {content.price} ETH</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        ) : (
+          <DisplayContents contents={filteredContents} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default UploadContent;
+
+
+
+
+
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
+
+contract ContentPlatform is Ownable {
+    using Strings for uint256;
+
+    enum ContentType { Ebook, Video, Music }
+    enum ContentStatus { Pending, Approved, Rejected }
+
+    struct Content {
+        uint256 id;
+        address creator;
+        string title;
+        string description;
+        string ipfsHash;
+        uint256 price;
+        bool isActive;
+        ContentType contentType;
+        ContentStatus status;
+    }
+
+    struct Review {
+        address reviewer;
+        uint8 rating; // Rating out of 5
+        string comment;
+    }
+
+    mapping(uint256 => Review[]) public contentReviews;
+    mapping(uint256 => Content) public contents;
+    mapping(address => mapping(uint256 => bool)) public contentPurchases;
+    mapping(bytes32 => bool) public existingContentHashes;
+    uint256 public contentCount;
+
+    event ContentSubmitted(
+        uint256 indexed id,
+        address indexed creator,
+        string title,
+        string description,
+        string ipfsHash,
+        uint256 price,
+        ContentType contentType
+    );
+    event ContentApproved(uint256 indexed id, address indexed admin);
+    event ContentRejected(uint256 indexed id, address indexed admin);
+    event ContentCreated(uint256 indexed id, address indexed creator, string title, string description, string ipfsHash, uint256 price, ContentType contentType);
+    event ContentPurchased(uint256 indexed id, address indexed buyer, address indexed creator, string ipfsHash, uint256 price);
+    event ContentDeleted(uint256 indexed id, address indexed creator);
+
+    modifier onlyCreator(uint256 _id) {
+        require(contents[_id].creator == msg.sender, "You are not the creator of this content.");
+        _;
+    }
+
+    function getContentByHash(string memory _ipfsHash) public view returns (bool, Content memory) {
+        for (uint i = 1; i <= contentCount; i++) {
+            if (keccak256(abi.encodePacked(contents[i].ipfsHash)) == keccak256(abi.encodePacked(_ipfsHash))) {
+                return (true, contents[i]);
+            }
+        }
+        return (false, Content(0, address(0), "", "", "", 0, false, ContentType.Ebook, ContentStatus.Pending));
+    }
+
+    function addReview(uint256 _id, uint8 _rating, string memory _comment) public {
+        require(contentPurchases[msg.sender][_id], "You need to purchase content to leave a review.");
+        require(_rating > 0 && _rating <= 5, "Rating must be between 1 and 5.");
+
+        contentReviews[_id].push(Review(msg.sender, _rating, _comment));
+    }
+
+    function getContentReviews(uint256 _id) public view returns (Review[] memory) {
+        return contentReviews[_id];
+    }
+
+    function submitContentForReview(
+            string memory _title,
+            string memory _description,
+            string memory _ipfsHash,
+            uint256 _price,
+            ContentType _contentType
+        ) public {
+            require(bytes(_ipfsHash).length > 0, "IPFS hash is required");
+
+            contentCount++;
+            contents[contentCount] = Content(
+                contentCount,
+                msg.sender,
+                _title,
+                _description,
+                _ipfsHash,
+                _price,
+                false,
+                _contentType,
+                ContentStatus.Pending
+            );
+
+            emit ContentSubmitted(
+                contentCount,
+                msg.sender,
+                _title,
+                _description,
+                _ipfsHash,
+                _price,
+                _contentType
+            );
+        }
+
+
+    function approveContent(uint256 _id, string memory _ipfsHash) public onlyOwner {
+        Content storage content = contents[_id];
+        require(content.status == ContentStatus.Pending, "Content is not pending approval.");
+
+        bytes32 contentHash = keccak256(abi.encodePacked(_ipfsHash));
+        require(!existingContentHashes[contentHash], "Similar content already exists.");
+
+        content.ipfsHash = _ipfsHash;
+        content.isActive = true;
+        content.status = ContentStatus.Approved;
+        existingContentHashes[contentHash] = true;
+
+        emit ContentApproved(_id, msg.sender);
+        emit ContentCreated(_id, content.creator, content.title, content.description, _ipfsHash, content.price, content.contentType);
+    }
+
+    function rejectContent(uint256 _id) public onlyOwner {
+        Content storage content = contents[_id];
+        require(content.status == ContentStatus.Pending, "Content is not pending approval.");
+        content.status = ContentStatus.Rejected;
+        emit ContentRejected(_id, msg.sender);
+    }
+
+    function updateContent(uint256 _id, string memory _title, string memory _description, string memory _ipfsHash, uint256 _price, ContentType _contentType) public onlyCreator(_id) {
+        Content storage content = contents[_id];
+        require(content.status == ContentStatus.Approved, "Content must be approved before it can be updated.");
+
+        bytes32 contentHash = keccak256(abi.encodePacked(_ipfsHash));
+        require(!existingContentHashes[contentHash] || keccak256(abi.encodePacked(content.ipfsHash)) == keccak256(abi.encodePacked(_ipfsHash)), "Similar content already exists.");
+
+        content.title = _title;
+        content.description = _description;
+        content.ipfsHash = _ipfsHash;
+        content.price = _price;
+        content.contentType = _contentType;
+
+        if (keccak256(abi.encodePacked(content.ipfsHash)) != keccak256(abi.encodePacked(_ipfsHash))) {
+            existingContentHashes[keccak256(abi.encodePacked(content.ipfsHash))] = false;
+            existingContentHashes[contentHash] = true;
+        }
+    }
+
+    function getContent(uint256 _id) public view returns (Content memory) {
+        return contents[_id];
+    }
+
+    function deleteContent(uint256 _id) public onlyCreator(_id) {
+        require(contents[_id].isActive, "Content is already inactive.");
+        contents[_id].isActive = false;
+        emit ContentDeleted(_id, msg.sender);
+    }
+
+    function toggleContentStatus(uint256 _id) public onlyCreator(_id) {
+        contents[_id].isActive = !contents[_id].isActive;
+    }
+
+    function purchaseContent(uint256 _id) public payable {
+        Content storage content = contents[_id];
+        require(content.isActive, "This content is not available for purchase.");
+        require(msg.value >= content.price, "Insufficient funds to purchase this content.");
+        require(!contentPurchases[msg.sender][_id], "You have already purchased this content.");
+
+        contentPurchases[msg.sender][_id] = true;
+        payable(content.creator).transfer(content.price);
+
+        emit ContentPurchased(_id, msg.sender, content.creator, content.ipfsHash, content.price);
+    }
+
+    function getCreatorContents(address _creator) public view returns (Content[] memory) {
+        uint256 creatorContentCount = 0;
+        for (uint256 i = 1; i <= contentCount; i++) {
+            if (contents[i].creator == _creator) {
+                creatorContentCount++;
+            }
+        }
+        Content[] memory creatorContents = new Content[](creatorContentCount);
+        uint256 index = 0;
+        for (uint256 i = 1; i <= contentCount; i++) {
+            if (contents[i].creator == _creator) {
+                creatorContents[index] = contents[i];
+                index++;
+            }
+        }
+        return creatorContents;
+    }
+
+    function getAvailableContents() public view returns (Content[] memory) {
+        uint256 availableContentCount = 0;
+        for (uint256 i = 1; i <= contentCount; i++) {
+            if (contents[i].isActive) {
+                availableContentCount++;
+            }
+        }
+        Content[] memory availableContents = new Content[](availableContentCount);
+        uint256 index = 0;
+        for (uint256 i = 1; i <= contentCount; i++) {
+            if (contents[i].isActive) {
+                availableContents[index] = contents[i];
+                index++;
+            }
+        }
+        return availableContents;
+    }
+
+    function getPurchasedContents(address _buyer) public view returns (Content[] memory) {
+        uint256 purchasedContentCount = 0;
+        for (uint256 i = 1; i <= contentCount; i++) {
+            if (contentPurchases[_buyer][i]) {
+                purchasedContentCount++;
+            }
+        }
+        Content[] memory purchasedContents = new Content[](purchasedContentCount);
+        uint256 index = 0;
+        for (uint256 i = 1; i <= contentCount; i++) {
+            if (contentPurchases[_buyer][i]) {
+                purchasedContents[index] = contents[i];
+                index++;
+            }
+        }
+        return purchasedContents;
+    }
+
+    function getPendingContents() public view returns (Content[] memory) {
+        uint256 pendingContentCount = 0;
+        for (uint256 i = 1; i <= contentCount; i++) {
+            if (contents[i].status == ContentStatus.Pending) {
+                pendingContentCount++;
+            }
+        }
+        Content[] memory pendingContents = new Content[](pendingContentCount);
+        uint256 index = 0;
+        for (uint256 i = 1; i <= contentCount; i++) {
+            if (contents[i].status == ContentStatus.Pending) {
+                pendingContents[index] = contents[i];
+                index++;
+            }
+        }
+        return pendingContents;
+    }
+
+    function getSoldContentsAndIncome(address _creator) public view returns (Content[] memory, uint256) {
+        uint256 soldContentCount = 0;
+        uint256 totalIncome = 0;
+        for (uint256 i = 1; i <= contentCount; i++) {
+            if (contents[i].creator == _creator && contentPurchases[address(0)][i]) {
+                soldContentCount++;
+                totalIncome += contents[i].price;
+            }
+        }
+        Content[] memory soldContents = new Content[](soldContentCount);
+        uint256 index = 0;
+        for (uint256 i = 1; i <= contentCount; i++) {
+            if (contents[i].creator == _creator && contentPurchases[address(0)][i]) {
+                soldContents[index] = contents[i];
+                index++;
+            }
+        }
+        return (soldContents, totalIncome);
+    }
+}
