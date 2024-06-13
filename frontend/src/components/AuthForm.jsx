@@ -112,7 +112,7 @@ const AuthForm = ({ mode }) => {
           setAlert({ message: 'Registration successful!', type: 'success' });
           setTimeout(() => {
             navigate('/signin');
-          }, 2000);
+          }, 500);
         } else {
           const result = await login(formState).unwrap();
           const { token, userType } = result;

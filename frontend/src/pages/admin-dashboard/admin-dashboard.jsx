@@ -1,17 +1,17 @@
-import { useEffect, useState } from 'react';
-import { getPendingContents, getApprovedContents, getRejectedContents, approveContent, rejectContent } from '../../utils/Interact'; 
-import { create } from 'ipfs-http-client';
+import { useState, useEffect } from 'react';
+import { getPendingContents, getApprovedContents, getRejectedContents, approveContent, rejectContent } from '../../utils/Interact';
 import { ArrowLeftIcon, HomeIcon, UserIcon, DocumentTextIcon } from '@heroicons/react/solid';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const ipfs = create({ url: 'http://127.0.0.1:5001/api/v0' });
+const ipfsUrl = 'https://gateway.pinata.cloud/ipfs/';
 
 const AdminDashboard = () => {
   const [pendingContents, setPendingContents] = useState([]);
   const [approvedContents, setApprovedContents] = useState([]);
   const [rejectedContents, setRejectedContents] = useState([]);
   const [selectedContent, setSelectedContent] = useState(null);
+  const [contentObjectUrl, setContentObjectUrl] = useState(null);
   const [activeTab, setActiveTab] = useState('pending');
   const [sidebarTab, setSidebarTab] = useState('dashboard');
 
@@ -84,26 +84,27 @@ const AdminDashboard = () => {
     }
   };
 
-  const renderContent = (content) => {
-    const ipfsUrl = `http://127.0.0.1:8081/ipfs/${content.ipfsHash}`;
+  const fetchContentFromIPFS = async (ipfsHash) => {
+    try {
+      console.log(`${ipfsUrl}${ipfsHash}`)
+      const response = await fetch(`${ipfsUrl}${ipfsHash}`);
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      setContentObjectUrl(objectUrl);
+    } catch (error) {
+      console.error('Error fetching content from IPFS:', error);
+      toast.error('Error fetching content. Please try again.');
+    }
+  };
 
+  const renderContent = (content) => {
     switch (content.contentType) {
       case 0: // Ebook
-        return <iframe src={ipfsUrl} width="100%" height="100%" title={content.title} className="rounded border" />;
+        return <iframe src={contentObjectUrl} title="Ebook" className="w-full h-full" />;
       case 1: // Video
-        return (
-          <video width="100%" height="100%" controls className="rounded border">
-            <source src={ipfsUrl} type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
-        );
+        return <video src={contentObjectUrl} controls className="w-full h-full" />;
       case 2: // Music
-        return (
-          <audio controls className="w-full">
-            <source src={ipfsUrl} type="audio/mpeg" />
-            Your browser does not support the audio element.
-          </audio>
-        );
+        return <audio src={contentObjectUrl} controls className="w-full h-full" />;
       default:
         return <p className="text-red-500">Unsupported content type</p>;
     }
@@ -111,10 +112,12 @@ const AdminDashboard = () => {
 
   const handleDisplayContent = async (content) => {
     setSelectedContent(content);
+    await fetchContentFromIPFS(content.ipfsHash);
   };
 
   const handleBack = () => {
     setSelectedContent(null);
+    setContentObjectUrl(null);
   };
 
   const renderContentList = (contents) => {
@@ -201,7 +204,7 @@ const AdminDashboard = () => {
       </aside>
 
       <main className="flex-1 p-8">
-        <ToastContainer /> 
+        <ToastContainer />
         {sidebarTab === 'dashboard' && renderDashboard()}
         {sidebarTab === 'manageuser' && renderManageUsers()}
         {sidebarTab === 'managecontent' && (

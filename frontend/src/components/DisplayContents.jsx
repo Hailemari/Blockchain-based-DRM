@@ -32,26 +32,38 @@ const getStatusColor = (status) => {
 };
 
 const DisplayContents = ({ contents }) => {
-  console.log(contents)
+  console.log(contents);
   const [selectedContent, setSelectedContent] = useState(null);
+  const [contentObjectUrl, setContentObjectUrl] = useState(null);
+
+  const fetchContentFromIPFS = async (ipfsHash) => {
+    try {
+      const response = await fetch(`https://gateway.pinata.cloud/ipfs/${ipfsHash}`);
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      setContentObjectUrl(objectUrl);
+    } catch (error) {
+      console.error('Error fetching content from IPFS:', error);
+    }
+  };
 
   const renderContent = (content) => {
-    const ipfsUrl = `http://127.0.0.1:8081/ipfs/${content.ipfsHash}`;
+    if (!contentObjectUrl) return <p>Loading...</p>;
 
     switch (content.contentType) {
       case 0: // Ebook
-        return <iframe src={ipfsUrl} width="100%" height="100%" title={content.title} className="rounded border" />;
+        return <iframe src={contentObjectUrl} width="100%" height="100%" title={content.title} className="rounded border" />;
       case 1: // Video
         return (
           <video width="100%" height="100%" controls className="rounded border">
-            <source src={ipfsUrl} type="video/mp4" />
+            <source src={contentObjectUrl} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
         );
       case 2: // Music
         return (
           <audio controls className="w-full">
-            <source src={ipfsUrl} type="audio/mpeg" />
+            <source src={contentObjectUrl} type="audio/mpeg" />
             Your browser does not support the audio element.
           </audio>
         );
@@ -60,8 +72,14 @@ const DisplayContents = ({ contents }) => {
     }
   };
 
+  const handleContentClick = async (content) => {
+    setSelectedContent(content);
+    await fetchContentFromIPFS(content.ipfsHash);
+  };
+
   const handleBack = () => {
     setSelectedContent(null);
+    setContentObjectUrl(null);
   };
 
   const getImageForContentType = (contentType) => {
@@ -103,11 +121,11 @@ const DisplayContents = ({ contents }) => {
         <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {contents.map((content, index) => (
             <li key={index} className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 relative">
-              <div className="cursor-pointer" onClick={() => setSelectedContent(content)}>
-                <img 
-                  src={getImageForContentType(content.contentType)} 
-                  alt={content.title} 
-                  className="rounded-lg w-full h-48 object-cover mb-4" 
+              <div className="cursor-pointer" onClick={() => handleContentClick(content)}>
+                <img
+                  src={getImageForContentType(content.contentType)}
+                  alt={content.title}
+                  className="rounded-lg w-full h-48 object-cover mb-4"
                 />
                 <div className={`absolute top-4 right-4 text-white px-3 py-1 rounded-full shadow-lg ${getStatusColor(getStatusMessage(content.isActive, content.status))}`}>
                   <p className="text-sm">{getStatusMessage(content.isActive, content.status)}</p>

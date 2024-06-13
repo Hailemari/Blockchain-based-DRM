@@ -5,9 +5,10 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaPlus, FaTachometerAlt, FaShoppingCart } from 'react-icons/fa';
 import DisplayContents from './DisplayContents';
-import { create } from 'ipfs-http-client';
 
-const ipfs = create({ url: 'http://127.0.0.1:5001/api/v0' });
+
+const pinataJwt = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiI0ZDlmNGJhZS1hYzlhLTQxNzUtYTQ4NC0wYWM0NWI2ZjRlZjYiLCJlbWFpbCI6ImhhaWxlbWFyaWFta2VmYWxlMTlAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsInBpbl9wb2xpY3kiOnsicmVnaW9ucyI6W3siaWQiOiJGUkExIiwiZGVzaXJlZFJlcGxpY2F0aW9uQ291bnQiOjF9LHsiaWQiOiJOWUMxIiwiZGVzaXJlZFJlcGxpY2F0aW9uQ291bnQiOjF9XSwidmVyc2lvbiI6MX0sIm1mYV9lbmFibGVkIjpmYWxzZSwic3RhdHVzIjoiQUNUSVZFIn0sImF1dGhlbnRpY2F0aW9uVHlwZSI6InNjb3BlZEtleSIsInNjb3BlZEtleUtleSI6Ijc2ZWQ2NjU5ZmI1OTgxOGEzYWE2Iiwic2NvcGVkS2V5U2VjcmV0IjoiODk1ZWQwNmY3ODJiOWJkM2QyMmVlZDIyZWRlMTk0MmU0N2MwOTlmODc4NDA2NWUzODY5ODFmOWI4ZjViYzIzYSIsImlhdCI6MTcxODE4MTAyOX0.ZuXd19P02gV545n2VWzNQZ42qzZ21yzgJIudZ6kzPTY';
+
 
 function UploadContent() {
   const [file, setFile] = useState(null);
@@ -127,11 +128,23 @@ function UploadContent() {
     setValidationErrors({});
   
     try {
-      const added = await ipfs.add(file);
-      const ipfsHash = added.path;
+      const formData = new FormData();
+      formData.append('file', file);
   
+      const res = await fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${pinataJwt}`
+        },
+        body: formData
+      });
+  
+      const result = await res.json();
+      const ipfsHash = result.IpfsHash;
+      
+      
       if (ipfsHashes.includes(ipfsHash)) {
-        console.log('duplicate file')
+        console.log('duplicate file');
         toast.error('This file has already been uploaded.');
         return;
       }
@@ -141,19 +154,20 @@ function UploadContent() {
         download
       };
   
-      const result = await submitContentForReview(title, description, ipfsHash, price, contentType, permissions);
-      if (result.success) {
+      const submissionResult = await submitContentForReview(title, description, ipfsHash, price, contentType, permissions);
+      if (submissionResult.success) {
         toast.success('Content submitted for review successfully!');
-        setIpfsHashes([...ipfsHashes, ipfsHash]); 
+        setIpfsHashes([...ipfsHashes, ipfsHash]);
         fetchCreatorContents();
       } else {
-        toast.error(result.message || 'Error submitting content');
+        toast.error(submissionResult.message || 'Error submitting content');
       }
     } catch (error) {
       toast.error('Error submitting content for review');
       console.error('Error submitting content for review:', error);
     }
   };
+  
   
 
   const handleSearch = (event) => {
