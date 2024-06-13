@@ -16,10 +16,10 @@ const AuthHandler = ({ children }) => {
       } else if (userType) {
         switch (userType) {
           case 'Creator':
-            navigate('/upload', { replace: true });
+            navigate('/creator_dashboard', { replace: true });
             break;
           case 'Consumer':
-            navigate('/purchase', { replace: true });
+            navigate('/consumer_dashboard', { replace: true });
             break;
           case 'Admin':
             navigate('/admin-dashboard', { replace: true });

@@ -124,9 +124,9 @@ const AuthForm = ({ mode }) => {
 
           let redirectPath = '/';
           if (userType === 'Creator') {
-            redirectPath = '/upload';
+            redirectPath = '/creator_dashboard';
           } else if (userType === 'Consumer') {
-            redirectPath = '/purchase';
+            redirectPath = '/consumer_dashboard';
           } else if (userType === 'Admin') {
             redirectPath = '/admin-dashboard';
           }

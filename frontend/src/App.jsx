@@ -31,8 +31,8 @@ function App() {
 
         <Route path="user-dashboard" element={<AuthHandler><ProtectedRoute element={<UserDashboard />} /></AuthHandler>} />
         <Route path="profile" element={<AuthHandler><ProtectedRoute element={<UserProfile />} /></AuthHandler>} />
-        <Route path="upload" element={<AuthHandler><ProtectedRoute element={<UploadContent />} /></AuthHandler>} />
-        <Route path="purchase" element={<AuthHandler><ProtectedRoute element={<PurchaseContent />} /></AuthHandler>} />
+        <Route path="creator_dashboard" element={<AuthHandler><ProtectedRoute element={<UploadContent />} /></AuthHandler>} />
+        <Route path="consumer_dashboard" element={<AuthHandler><ProtectedRoute element={<PurchaseContent />} /></AuthHandler>} />
         <Route path="admin-dashboard" element={<AuthHandler><ProtectedRoute element={<AdminDashboard />} /></AuthHandler>} />
 
         <Route path="admin-login" element={<AuthForm mode="signin" />} />
