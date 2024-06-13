@@ -5,6 +5,7 @@ import { useState } from 'react';
 import bookCoverImage from '../assets/images/book_cover.jpg';
 import videoImage from '../assets/images/video.jpg';
 import musicImage from '../assets/images/music.jpg';
+import ProfileInfo from './profileInfo';
 
 const ContentType = {
   0: 'Ebook',

@@ -2,11 +2,11 @@ import { useRef, useState } from 'react';
 import decentral from '../../assets/images/decentral.png';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
-
+import coverVideo from '../../assets/videos/cover-video.mp4'; // Import the video file
 const CoolButton = ({ onClick }) => {
   return (
-    <Link to='/login'>
-      <button className="cool-button" onClick={onClick}>
+    <Link to='/newUser'>
+      <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
         Get Started Now
       </button>
     </Link>
@@ -39,38 +39,29 @@ function Landing() {
 
   return (
     <div>
-      <nav className="navbar">
-        <div className="navbar-logo">
-          <Link to='/' className="logo-text">BDRM</Link>
+     
+      <div className='hero-container'>
+          <video src={coverVideo} autoPlay loop muted />
+          <p>protect your digital assets with blockchain!</p>
+          <p>What are you waiting for?</p>
+          <CoolButton/>
+  
         </div>
-        <div className={`navbar-menu ${isOpen ? 'open' : ''}`}>
-          <ul className="navbar-links">
-            <li><Link to="/home" onClick={toggleMenu}>Home</Link></li>
-            <li><Link to="#about" onClick={handleNavLinkClick}>About</Link></li>
-            <li><Link to="#services" onClick={scrollToService}>Services</Link></li>
-            <li><Link to="#contact" onClick={handleNavLinkClick}>Contact</Link></li>
-            <li><Link to="/login" onClick={toggleMenu}>Login</Link></li>
-          </ul>
-        </div>
-        <div className="navbar-toggle" onClick={toggleMenu}>
-          <div className={`bar ${isOpen ? 'open' : ''}`}></div>
-          <div className={`bar ${isOpen ? 'open' : ''}`}></div>
-          <div className={`bar ${isOpen ? 'open' : ''}`}></div>
-        </div>
-      </nav>
+
 
       <div className='hero-container'>
         <img src={decentral} alt="Blockchain illustration" className="hero-image" />
-        <p className="hero-text">Protect your digital assets with blockchain!</p>
-        <p className="hero-text">What are you waiting for?</p>
-        <CoolButton />
+        <div className="text-center mt-8">
+          <h1 className="text-4xl text-gray-900 leading-tight font-bold">Protect your digital assets with blockchain!</h1>
+          <p className="mt-2 text-gray-600">What are you waiting for?</p>
+          <CoolButton />
+        </div>
       </div>
 
       <div className='services' ref={serviceRef}>
-        <h1>What services BDRM offers to you?</h1>
-        <h3>The system has many features from simple file upload to advanced blockchain technologies. <br />
-          Including but not limited to:</h3>
-        <ul>
+        <h2 className="text-3xl text-gray-900 leading-tight font-bold mt-12">What services BDRM offers to you?</h2>
+        <p className="mt-4 text-gray-600">The system has many features from simple file upload to advanced blockchain technologies. Including but not limited to:</p>
+        <ul className="list-disc list-inside mt-4 text-gray-600">
           <li>Immutable record keeping!</li>
           <li>Decentralized Ownership Verification</li>
           <li>Smart Contract Automation</li>
@@ -81,48 +72,25 @@ function Landing() {
       </div>
 
       <div className='the-system'>
-        <h1>How the system really works</h1>
-        <div className='system'>
+        <h2 className="text-3xl text-gray-900 leading-tight font-bold mt-12">How the system really works</h2>
+        <div className='system mt-4 flex items-center justify-center'>
           <img src={decentral} alt="How it works" className="system-image" />
-          <div>
-            <h3>You will follow these simple steps to use the system.</h3>
-            <ul>
-              <li>Step 1: Upload your digital content.</li>
-              <li>Step 2: Register ownership on blockchain network.</li>
-              <li>Step 3: Set rights and permissions.</li>
-              <li>Step 4: Monitor usage and Royalty.</li>
-            </ul>
+          <div className="ml-8">
+            <p className="text-gray-600">You will follow these simple steps to use the system:</p>
+            <ol className="list-decimal list-inside mt-4 text-gray-600">
+              <li>Upload your digital content.</li>
+              <li>Register ownership on blockchain network.</li>
+              <li>Set rights and permissions.</li>
+              <li>Monitor usage and Royalty.</li>
+            </ol>
           </div>
         </div>
-        <CoolButton />
+        {/* <CoolButton /> */}
       </div>
-
-      <footer className="footer" ref={footerRef}>
-        <div className="footer-content">
-          <div className="footer-column">
-            <h3>About Us</h3>
-            <p>Our goal is protecting the digital content of every individual in Ethiopia and abroad.</p>
-          </div>
-          <div className="footer-column">
-            <h3>Services</h3>
-            <ul>
-              <li>Upload contents</li>
-              <li>Use contents</li>
-              <li>Manage contents</li>
-            </ul>
-          </div>
-          <div className="footer-column">
-            <h3>Contact Us</h3>
-            <p>Email: contact-bdrm@bdrm.com</p>
-            <p>Phone: +123456789</p>
-          </div>
-        </div>
-        <div className="footer-bottom">
-          <p>&copy; 2024 BDRM. All rights reserved.</p>
-        </div>
-      </footer>
     </div>
   );
 }
+
+
 
 export default Landing;

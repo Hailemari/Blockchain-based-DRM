@@ -4,7 +4,7 @@ import { FcReadingEbook } from 'react-icons/fc';
 import UserCard from "../components/newUserCard";
 import { Link, useNavigate } from "react-router-dom";
 
-export const NewUserScreen = () => {
+const NewUserScreen = () => {
   const [userType, setUserType] = useState("Consumer");
   const navigate = useNavigate();
 
@@ -54,3 +54,5 @@ export const NewUserScreen = () => {
     </div>
   );
 };
+
+export default NewUserScreen;

@@ -1,3 +1,5 @@
+@import url('../src/assets/css/navbar.css');
+@import url('../src/assets/css/App.css');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -10,7 +12,7 @@
   }
   
   .alert-info {
-    background-color: #007bff;
+    background-color: hsl(64, 100%, 50%);
   }
   
   .alert-success {
@@ -20,3 +22,486 @@
   .alert-error {
     background-color: #dc3545;
   }
+
+ 
+.boxes-container {
+  min-height: 100vh;
+  font-family: Roboto, Arial;
+  color: #adafb6;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(249, 251, 255, 0.6);
+}
+
+.boxes {
+  height: 32px;
+  width: 32px;
+  position: relative;
+  transform-style: preserve-3d;
+  transform-origin: 50% 50%;
+  margin-top: 32px;
+  transform: rotateX(60deg) rotateZ(45deg) rotateY(0deg) translateZ(0px);
+}
+
+.boxes .box {
+  width: 32px;
+  height: 32px;
+  top: 0px;
+  left: 0;
+  position: absolute;
+  transform-style: preserve-3d;
+}
+
+.boxes .box:nth-child(1) {
+  transform: translate(100%, 0);
+  animation: box1 1s linear infinite;
+}
+
+.boxes .box:nth-child(2) {
+  transform: translate(0, 100%);
+  animation: box2 1s linear infinite;
+}
+
+.boxes .box:nth-child(3) {
+  transform: translate(100%, 100%);
+  animation: box3 1s linear infinite;
+}
+
+.boxes .box:nth-child(4) {
+  transform: translate(200%, 0);
+  animation: box4 1s linear infinite;
+}
+
+.boxes .box > div {
+  background: #5c8df6;
+  --translateZ: 15.5px;
+  --rotateY: 0deg;
+  --rotateX: 0deg;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: #5c8df6;
+  top: auto;
+  right: auto;
+  bottom: auto;
+  left: auto;
+  transform: rotateY(var(--rotateY)) rotateX(var(--rotateX)) translateZ(var(--translateZ));
+}
+
+.boxes .box > div:nth-child(1) {
+  top: 0;
+  left: 0;
+  background: #5c8df6;
+}
+
+.boxes .box > div:nth-child(2) {
+  background: #145af2;
+ 
+  right: 0;
+  --rotateY: 90deg;
+}
+
+.boxes .box > div:nth-child(3) {
+  background: #447cf5;
+
+  --rotateX: -90deg;
+}
+
+.boxes .box > div:nth-child(4) {
+  background: #dbe3f4;
+  top: 0;
+  left: 0;
+  --translateZ: -90px;
+}
+
+.no-flights {
+  width: 100%;
+  height: 220px;
+}
+
+@keyframes box1 {
+  0%,
+  50% {
+    transform: translate(100%, 0);
+  }
+  100% {
+    transform: translate(200%, 0);
+  }
+}
+@keyframes box2 {
+  0% {
+    transform: translate(0, 100%);
+  }
+  50% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(100%, 0);
+  }
+}
+@keyframes box3 {
+  0%,
+  50% {
+    transform: translate(100%, 100%);
+  }
+  100% {
+    transform: translate(0, 100%);
+  }
+}
+@keyframes box4 {
+  0% {
+    transform: translate(200%, 0);
+  }
+  50% {
+    transform: translate(200%, 100%);
+  }
+  100% {
+    transform: translate(100%, 100%);
+  }
+}
+.header_border_line {
+  border: 1px solid #f2f2f2;
+  width: 100%;
+  position: absolute;
+  left: 0;
+}
+
+.nav-tab {
+  opacity: 70%;
+}
+
+.nav-tab:hover {
+  opacity: 100%;
+}
+
+.lazy-card-img {
+  width: 100%;
+  height: 300px;
+  border-radius: 8px;
+}
+  
+
+/* landing page */
+
+.App {
+  text-align: center;
+}
+
+video {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  z-index: -1;
+  top: 0;
+}
+
+.hero-container {
+  /* background: url('./videos/cover-video.mp4') center center/cover no-repeat; */
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  /* box-shadow: inset 0 0 0 1000px rgb(59, 59, 59); */
+  object-fit: contain;
+}
+
+.hero-container > h1 {
+  color: #fff;
+  font-size: 100px;
+  margin-top: -100px;
+  align-items: center;
+}
+
+.hero-container > p {
+  margin-top: 8px;
+  color: #fff;
+  font-size: 32px;
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande',
+    'Lucida Sans', Arial, sans-serif;
+  align-items: center ;
+}
+
+.hero-btns {
+  margin-top: 32px;
+}
+
+.hero-btns .btn {
+  margin: 6px;
+}
+
+.fa-play-circle {
+  margin-left: 4px;
+}
+
+.services{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: rgb(39, 34, 34);
+  top: 0;
+  color: #fff;
+
+}
+.the-system{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.system{
+  display: flex;
+  align-items: center;
+
+}
+
+.system img{
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 20px;
+  width: 300px;
+}
+
+.system li{
+  list-style: none;
+}
+
+.cool-button {
+  background-color: #4CAF50; /* Green */
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 12px;
+  transition: background-color 0.3s ease;
+  bottom: 10px;
+}
+
+.cool-button:hover {
+  background-color: #45a049; /* Darker Green */
+}
+
+.footer {
+  background-color: #333;
+  color: #fff;
+  padding: 50px 0;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-around;
+}
+
+.footer-column {
+  flex: 1;
+  margin: 0 20px;
+}
+
+.footer-column h3 {
+  font-size: 1.5rem;
+}
+
+.footer-column ul {
+  list-style: none;
+  padding: 0;
+}
+
+.footer-column ul li {
+  margin-bottom: 10px;
+}
+
+.footer-bottom {
+  background-color: #222;
+  padding: 10px 0;
+  text-align: center;
+}
+
+.footer-bottom p {
+  margin: 0;
+}
+
+
+@media screen and (max-width: 960px) {
+  .hero-container > h1 {
+    font-size: 70px;
+    margin-top: -150px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .hero-container > h1 {
+    font-size: 50px;
+    margin-top: -100px;
+  }
+
+  .hero-container > p {
+    font-size: 30px;
+  }
+
+  .btn-mobile {
+    display: block;
+    text-decoration: none;
+  }
+
+  .btn {
+    width: 100%;
+  }
+}
+
+/* nav bar */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;    
+  justify-content: space-between;
+  align-items: center;
+  background-color: #333;
+  padding: 20px;
+  color: #fff;
+
+}
+
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  
+}
+
+.navbar-logo img {
+  width: 40px;
+  height: 40px;
+  margin-right: 10px;
+}
+
+.logo-text {
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-decoration: none;
+  color: #fff;
+}
+
+.navbar-links {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+}
+
+.navbar-links li {
+  margin-right: 20px;
+  
+}
+
+.navbar-links li a {
+  text-decoration: none;
+  color: #fff;
+  font-size: 1.2rem;
+  transition: color 0.3s ease;
+}
+
+.navbar-links li a:hover {
+  color: #ffd700; /* Change to your desired hover color */
+}
+
+.navbar-toggle {
+  display: none;
+  flex-direction: column;
+  cursor: pointer;
+}
+
+.bar {
+  width: 25px;
+  height: 3px;
+  background-color: #fff;
+  margin: 4px 0;
+  transition: transform 0.3s ease;
+}
+
+.bar.open:nth-child(1) {
+  transform: translateY(8px) rotate(45deg);
+}
+
+.bar.open:nth-child(2) {
+  opacity: 0;
+}
+
+.bar.open:nth-child(3) {
+  transform: translateY(-8px) rotate(-45deg);
+}
+
+@media (max-width: 768px) {
+  .navbar-menu {
+    display: none;
+  }
+
+  .navbar-toggle {
+    display: flex;
+  }
+
+  .navbar-links {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .navbar-links li {
+    margin-bottom: 10px;
+  }
+
+  .navbar-links li a {
+    color: #fff;
+    font-size: 1.2rem;
+    text-decoration: none;
+  }
+
+  .navbar-links li a:hover {
+    color: #ffd700;
+  }
+
+  .navbar-menu.open {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+/* For Webkit (Chrome, Safari, etc.) */
+::-webkit-scrollbar {
+  width: 8px; /* Width of the scrollbar */
+}
+
+::-webkit-scrollbar-track {
+  background-color: #f1f1f1; /* Color of the scrollbar track */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #2167cf; /* Color of the scrollbar thumb */
+  border-radius: 6px; /* Roundness of the scrollbar thumb */
+}
+
+/* For Firefox */
+/* You can use scrollbar-color and scrollbar-width */
+/* Note: Support for scrollbar-color is limited */
+
+/* Example:
+scrollbar-width: thin;
+scrollbar-color: #888 #f1f1f1;
+*/
+
+/* For Internet Explorer */
+/* You can use -ms-overflow-style to style the scrollbar */
+/* Example: 
+-ms-overflow-style: none; // Hide scrollbar
+*/
+
+/* For Edge */
+/* Edge currently supports ::-webkit-scrollbar properties */

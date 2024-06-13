@@ -8,7 +8,8 @@ import bookCoverImage from '../assets/images/book_cover.jpg';
 import videoImage from '../assets/images/video.jpg';
 import musicImage from '../assets/images/music.jpg';
 import licenseTemplate from '../assets/files/license_template.txt';
-
+// import ProfileInfo from './profileInfo';
+import { useGetProfileQuery } from '../services/authApi';
 
 const ContentType = {
   0: 'Ebook',
@@ -34,6 +35,7 @@ const PurchaseContent = () => {
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
+  // const {profile}
   useEffect(() => {
     const fetchAccountAndContents = async (account) => {
       if (!account) return;
@@ -278,6 +280,7 @@ const PurchaseContent = () => {
     <div className="flex h-screen">
       <div className="w-1/6 bg-white shadow-lg flex flex-col items-center justify-center">
           <div className="flex flex-col space-y-4">
+            {/* <ProfileInfo /> */}
             <button
               className={`px-4 py-2 font-bold flex items-center text-gray-700 ${activeSection === 'Dashboard' ? 'bg-gray-300' : 'bg-white hover:bg-gray-200'}`}
               onClick={() => setActiveSection('Dashboard')}
