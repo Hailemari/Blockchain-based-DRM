@@ -15,6 +15,7 @@ import UserDashboard from './pages/user-dashboard/userDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import AuthHandler from './components/AuthHandler';
 import AuthForm from './components/AuthForm';
+import PaymentForm from './components/PaymentForm';
 
 function App() {
   return (
@@ -28,7 +29,7 @@ function App() {
         <Route path="request-password-reset" element={<OTP />} />
         <Route path="verify-otp" element={<OTPInput />} />
         <Route path="reset-password" element={<ResetPassword />} />
-
+        <Route path='payment-form' element={<PaymentForm/>}/>
         <Route path="user-dashboard" element={<AuthHandler><ProtectedRoute element={<UserDashboard />} /></AuthHandler>} />
         <Route path="profile" element={<AuthHandler><ProtectedRoute element={<UserProfile />} /></AuthHandler>} />
         <Route path="creator_dashboard" element={<AuthHandler><ProtectedRoute element={<UploadContent />} /></AuthHandler>} />
