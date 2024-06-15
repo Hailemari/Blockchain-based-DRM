@@ -45,3 +45,57 @@ exports.login = async (req, res, next) => {
     next(error);
   }
 };
+
+
+exports.getUsers = async (req, res, next) => {
+  try {
+    console.log('Fetching users');
+    const users = await User.find({});
+    res.status(200).json(users);
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+exports.removeUser = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findByIdAndDelete(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({ message: 'User removed successfully' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+exports.updateUser = async (req, res) => {
+  const { firstName, lastName, email } = req.body;
+
+  try {
+    
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Update user details
+    user.firstName = firstName || user.firstName;
+    user.lastName = lastName || user.lastName;
+    user.email = email || user.email;
+
+    // Save the updated user
+    await user.save();
+
+    res.json({ message: 'Profile updated successfully', user });
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};

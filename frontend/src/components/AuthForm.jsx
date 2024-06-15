@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
-import { FaFacebook } from 'react-icons/fa';
-import { FcGoogle } from 'react-icons/fc';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useLoginMutation, useSignupMutation } from '../services/authApi';
 import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai';
 import PropTypes from 'prop-types';
 import Alert from './Alert';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const signinContent = {
   linkUrl: '/register',
@@ -41,6 +41,7 @@ const AuthForm = ({ mode }) => {
   const [alert, setAlert] = useState({ message: '', type: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const location = useLocation();
 
   const searchParams = new URLSearchParams(location.search);
@@ -94,6 +95,10 @@ const AuthForm = ({ mode }) => {
           if (formState.password !== formState.confirmPassword) {
             newErrors.confirmPassword = 'Passwords do not match';
           }
+
+          if (!formState.userType) {
+            newErrors.userType = 'User type is required';
+          }
         }
 
         setErrors(newErrors);
@@ -106,12 +111,30 @@ const AuthForm = ({ mode }) => {
         return;
       }
 
+      setLoading(true);
+
       try {
         if (mode === 'register') {
-          await signup(formState).unwrap();
+          const result = await signup(formState).unwrap();
           setAlert({ message: 'Registration successful!', type: 'success' });
+
+          const { token, userType } = result;
+
+          localStorage.setItem('authToken', token);
+          localStorage.setItem('userType', userType);
+
+          toast.success('Successfully registered!');
+          let redirectPath = '/';
+          if (userType === 'Creator') {
+            redirectPath = '/creator_dashboard';
+          } else if (userType === 'Consumer') {
+            redirectPath = '/consumer_dashboard';
+          } else if (userType === 'Admin') {
+            redirectPath = '/admin-dashboard';
+          }
+          console.log('redirectPath', redirectPath);
           setTimeout(() => {
-            navigate('/signin');
+            navigate(redirectPath);
           }, 500);
         } else {
           const result = await login(formState).unwrap();
@@ -136,6 +159,7 @@ const AuthForm = ({ mode }) => {
           }, 500);
         }
       } catch (e) {
+        setLoading(false);
         if (mode === 'register' && signupError?.data?.message === 'User already exists') {
           setAlert({ message: 'User already exists. Please try logging in.', type: 'error' });
         } else if (mode === 'signin' && loginError?.data?.message === 'Invalid email or password') {
@@ -147,6 +171,24 @@ const AuthForm = ({ mode }) => {
     },
     [formState, mode, login, signup, navigate, signupError, loginError]
   );
+
+  useEffect(() => {
+    if (isLoginError && loginError) {
+      setLoading(false);
+      if (loginError?.data?.message === 'Invalid email or password') {
+        setAlert({ message: 'Invalid email or password. Please try again.', type: 'error' });
+      } else {
+        setAlert({ message: 'Could not sign in. Please try again.', type: 'error' });
+      }
+    } else if (isSignupError && signupError) {
+      setLoading(false);
+      if (signupError?.data?.message === 'User already exists') {
+        setAlert({ message: 'User already exists. Please try logging in.', type: 'error' });
+      } else {
+        setAlert({ message: 'Could not register. Please try again.', type: 'error' });
+      }
+    }
+  }, [isLoginError, loginError, isSignupError, signupError]);
 
   const handlePasswordVisibility = () => {
     setShowPassword((prevState) => !prevState);
@@ -173,7 +215,7 @@ const AuthForm = ({ mode }) => {
                 <label className="block text-gray-700 font-medium">First Name</label>
                 <input
                   type="text"
-                  className="mt-1 p-3 w-full border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="mt-1 p-3 w-full border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
                   value={formState.firstName}
                   placeholder="Enter First Name"
                   onChange={(e) =>
@@ -192,7 +234,7 @@ const AuthForm = ({ mode }) => {
                 <label className="block text-gray-700 font-medium">Last Name</label>
                 <input
                   type="text"
-                  className="mt-1 p-3 w-full border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="mt-1 p-3 w-full border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
                   value={formState.lastName}
                   placeholder="Enter Last Name"
                   onChange={(e) =>
@@ -211,7 +253,7 @@ const AuthForm = ({ mode }) => {
               <label className="block text-gray-700 font-medium">Email</label>
               <input
                 type="email"
-                className="mt-1 p-3 w-full border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="mt-1 p-3 w-full border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
                 value={formState.email}
                 placeholder="Enter Email"
                 onChange={(e) =>
@@ -233,7 +275,7 @@ const AuthForm = ({ mode }) => {
             <label className="block text-gray-700 font-medium">Email</label>
             <input
               type="text"
-              className="mt-1 p-3 w-full border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="mt-1 p-3 w-full border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
               value={formState.email}
               placeholder="Enter Email"
               onChange={(e) =>
@@ -254,7 +296,7 @@ const AuthForm = ({ mode }) => {
           <div className="relative">
             <input
               type={showPassword ? 'text' : 'password'}
-              className="mt-1 p-3 w-full border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="mt-1 p-3 w-full border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
               value={formState.password}
               placeholder="Enter Password"
               autoComplete="off"
@@ -288,7 +330,7 @@ const AuthForm = ({ mode }) => {
               <div className="relative">
                 <input
                   type={showConfirmPassword ? 'text' : 'password'}
-                  className="mt-1 p-3 w-full border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="mt-1 p-3 w-full border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
                   value={formState.confirmPassword}
                   placeholder="Confirm Password"
                   autoComplete="off"
@@ -318,21 +360,60 @@ const AuthForm = ({ mode }) => {
             <div className="flex items-center mb-6">
               <input
                 type="checkbox"
-                className="rounded border-gray-300 text-blue-500 focus:ring-blue-500"
+                className="rounded border-gray-300 text-green-500 focus:ring-green-500"
                 required
               />
               <p className="text-gray-600 ml-2">
                 I agree to the terms and conditions
               </p>
             </div>
+
+            <div className="mb-4">
+              <div className="flex items-center space-x-4">
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    value="Consumer"
+                    checked={formState.userType === 'Consumer'}
+                    onChange={(e) =>
+                      setFormState((prevState) => ({
+                        ...prevState,
+                        userType: e.target.value,
+                      }))
+                    }
+                    className="form-radio h-4 w-4 text-green-500"
+                  />
+                  <span className="ml-2 text-gray-700">Consumer</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    value="Creator"
+                    checked={formState.userType === 'Creator'}
+                    onChange={(e) =>
+                      setFormState((prevState) => ({
+                        ...prevState,
+                        userType: e.target.value,
+                      }))
+                    }
+                    className="form-radio h-4 w-4 text-green-500"
+                  />
+                  <span className="ml-2 text-gray-700">Creator</span>
+                </label>
+              </div>
+              {errors.userType && (
+                <p className="text-red-500 mt-2">{errors.userType}</p>
+              )}
+            </div>
           </div>
         )}
 
         <button
           type="submit"
-          className="bg-blue-600 text-white p-3 rounded hover:bg-blue-700 transition w-full font-semibold"
+          className="bg-green-600 text-white p-3 rounded hover:bg-green-700 transition w-full font-semibold"
+          disabled={loading}
         >
-          {content.buttonText}
+          {loading ? 'Loading...' : content.buttonText}
         </button>
       </form>
       {errors.general && (
@@ -348,33 +429,10 @@ const AuthForm = ({ mode }) => {
           </Link>
         </div>
       )}
-      <div className="flex items-center mt-8">
-        <div className="border-t border-gray-300 w-full flex-grow"></div>
-        <span className="px-3 text-gray-500">Or</span>
-        <div className="border-t border-gray-300 w-full flex-grow"></div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4 mt-4">
-        <button
-          className="flex border items-center border-gray-300 rounded py-2 px-4 hover:bg-gray-100 transition"
-          onClick={() => {}}
-        >
-          <FcGoogle className="mr-2" />
-          Google
-        </button>
-        <button
-          className="flex items-center border border-gray-300 rounded py-2 px-4 hover:bg-gray-100 transition"
-          onClick={() => {}}
-        >
-          <FaFacebook className="mr-2" />
-          Facebook
-        </button>
-      </div>
-
       <div className="text-center mt-6">
         <p className="text-gray-600">
           {content.linkText}{' '}
-          <Link to={content.linkUrl} className="text-blue-500 hover:underline">
+          <Link to={content.linkUrl} className="text-green-500 hover:underline">
             {content.redirect}
           </Link>
         </p>

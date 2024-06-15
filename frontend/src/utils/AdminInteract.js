@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 import ContentPlatform from './ContentPlatform.json';
 
-const contractAddress = '0x38716CE3E6C155171E294b238aAa0dbBbf7B1d78';
+const contractAddress = '0xD02E14654765d3c308C287c06e0e222ff30FAA55';
 
 const getProvider = () => {
   if (typeof window.ethereum !== 'undefined') {

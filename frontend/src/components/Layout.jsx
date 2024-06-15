@@ -1,21 +1,16 @@
+import { Outlet } from 'react-router-dom';
+import { Header } from './Header';
 
-import PropTypes from 'prop-types';
-import Sidebar from './Sidebar';
-
-const Layout = ({ contents, children }) => {
+const Layout = () => {
   return (
-    <div className="flex">
-      <Sidebar contents={contents} />
-      <div className="flex-1 p-6 bg-gray-100">
-        {children}
-      </div>
+    <div className="flex flex-col min-h-screen">
+      <Header />
+      <main className="flex-grow">
+        <Outlet />
+      </main>
+    
     </div>
   );
-};
-
-Layout.propTypes = {
-  contents: PropTypes.array.isRequired,
-  children: PropTypes.node.isRequired,
 };
 
 export default Layout;

@@ -263,34 +263,40 @@ contract ContentPlatform is Ownable {
         uint256 totalIncome = 0;
 
         for (uint256 i = 1; i <= contentCount; i++) {
-            if (contents[i].creator == _creator) {
-                for (uint256 j = 1; j <= contentCount; j++) {
-                    if (contentPurchases[address(uint160(j))][i]) {
-                        soldContentCount++;
-                        totalIncome += contents[i].price;
-                        break;  
-                    }
+            if (contents[i].creator == _creator && contents[i].isActive && contents[i].status == ContentStatus.Approved) {
+                if (isContentSold(i)) {
+                    soldContentCount++;
+                    totalIncome += contents[i].price;
                 }
             }
         }
 
+        
         Content[] memory soldContents = new Content[](soldContentCount);
         uint256 index = 0;
 
+       
         for (uint256 i = 1; i <= contentCount; i++) {
-            if (contents[i].creator == _creator) {
-                for (uint256 j = 1; j <= contentCount; j++) {
-                    if (contentPurchases[address(uint160(j))][i]) {
-                        soldContents[index] = contents[i];
-                        index++;
-                        break; 
-                    }
+            if (contents[i].creator == _creator && contents[i].isActive && contents[i].status == ContentStatus.Approved) {
+                if (isContentSold(i)) {
+                    soldContents[index] = contents[i];
+                    index++;
                 }
             }
         }
 
         return (soldContents, totalIncome);
     }
+
+    function isContentSold(uint256 _id) internal view returns (bool) {
+        for (uint256 j = 1; j <= contentCount; j++) {
+            if (contentPurchases[address(uint160(j))][_id]) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
 
 

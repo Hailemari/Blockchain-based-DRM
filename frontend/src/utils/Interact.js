@@ -1,8 +1,33 @@
 // Interact.js
 import { ethers } from 'ethers';
+import axios from 'axios';
 import ContentPlatform from './ContentPlatform.json';
 
-const contractAddress = '0x3496E18f1B10Ba6979d04f5e000e1c75a1B84E18';
+const contractAddress = '0xD02E14654765d3c308C287c06e0e222ff30FAA55';
+
+const apiUrl = 'http://localhost:5000/auth';
+
+export const getUsers = async () => {
+  try {
+    const response = await axios.get(`${apiUrl}/users`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    throw error;
+  }
+};
+
+
+export const removeUser = async (userId) => {
+  try {
+    const response = await axios.delete(`${apiUrl}/users/${userId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error removing user:', error);
+    throw error;
+  }
+};
+
 
 const getProvider = () => {
   if (typeof window.ethereum !== 'undefined') {
@@ -299,4 +324,27 @@ export const getRejectedContents = async () => {
     console.error('Error fetching rejected contents:', error);
     throw error;
   }
+};
+
+
+
+
+export const fetchSalesData = async (creatorAddress) => {
+  const contract = await getContract();
+  const filter = contract.filters.ContentPurchased(null, null, creatorAddress);
+
+  const events = await contract.queryFilter(filter);
+  const sales = events.map((event) => {
+    return {
+      id: event.args.id.toNumber(),
+      buyer: event.args.buyer,
+      creator: event.args.creator,
+      ipfsHash: event.args.ipfsHash,
+      price: ethers.utils.formatEther(event.args.price),
+    };
+  });
+
+  const totalIncome = sales.reduce((total, sale) => total + parseFloat(sale.price), 0);
+
+  return { sales, totalIncome };
 };

@@ -1,79 +1,58 @@
-import { Card } from './Card'
+import { useNavigate } from 'react-router-dom';
+import { FaTachometerAlt, FaPlus, FaShoppingCart } from 'react-icons/fa';
 
-const Home = () => {
- 
-  const books = [
-    {
-      title: 'The Great Gatsby',
-      description: 'A classic novel about the American Dream',
-      rate: 4.5,
-    },
-    {
-      title: 'To Kill a Mockingbird',
-      description: 'A powerful story about racial injustice',
-      rate: 4.8,
-    },
-    {
-      title: 'Pride and Prejudice',
-      description: 'A timeless tale of love and societal expectations',
-      rate: 4.7,
-    },
+const HomePage = () => {
+  const navigate = useNavigate();
 
-    {
-      title: 'The Lord of the Rings',
-
-      description: 'A powerful and epic fantasy novel',
-      rate: 4.9,
-    },
-    {
-      title: '1984',
-      description: 'A dystopian novel about the dangers of totalitarianism',
-      rate: 4.6,
-    },
-    {
-      title: 'The Catcher in the Rye',
-      description: 'A coming-of-age novel about teenage angst',
-      rate: 4.2,
-    },
-  ]
-
-  const categories = ['Fiction', 'Non-Fiction', 'Mystery', 'Sci-Fi', 'Romance']
+  const handleGetStarted = () => {
+    navigate('/register');
+  };
 
   return (
-    <div className="p-4">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Explore Books</h1>
-        <div className="flex items-center">
-          <select className="p-2 border border-gray-300 rounded">
-            <option value="">All Categories</option>
-            {categories.map((category, index) => (
-              <option key={index} value={category}>
-                {category}
-              </option>
-            ))}
-          </select>
-          <input
-            type="search"
-            placeholder="Search"
-            className="p-2 border border-gray-300 rounded"
-          />
-          <button className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600">
-            Add Book
+    <div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center">
+      <main className="flex-grow container mx-auto py-12 px-6 md:px-12 lg:px-24">
+        <section className="text-center mb-12">
+          <h2 className="text-4xl font-bold text-gray-800 mb-4">Welcome to DRM App</h2>
+          <p className="text-gray-600 text-lg mb-6">Easily manage and monetize your digital content using our decentralized platform.</p>
+          <button
+            onClick={handleGetStarted}
+            className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full transition duration-300"
+          >
+            Get Started
           </button>
-        </div>
-      </div>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {books.map((book, index) => (
-          <Card
-            key={index}
-            title={book.title}
-            desc={book.description}
-            rate={book.rate}
-          />
-        ))}
-      </div>
-    </div>
-  )
-}
+        </section>
 
-export default Home
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white shadow-lg rounded-lg p-6 text-center hover:shadow-xl transition duration-300">
+            <FaTachometerAlt className="text-green-500 text-5xl mb-4 mx-auto" />
+            <h3 className="text-xl font-bold text-gray-800 mb-2">Dashboard</h3>
+            <p className="text-gray-600 mb-4">View your overall performance and statistics in one place.</p>
+            <a href="#" className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full transition duration-300">Go to Dashboard</a>
+          </div>
+
+          <div className="bg-white shadow-lg rounded-lg p-6 text-center hover:shadow-xl transition duration-300">
+            <FaPlus className="text-green-500 text-5xl mb-4 mx-auto" />
+            <h3 className="text-xl font-bold text-gray-800 mb-2">Manage Content</h3>
+            <p className="text-gray-600 mb-4">Easily manage all your digital content in one place.</p>
+            <a href="#" className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full transition duration-300">Manage Content</a>
+          </div>
+
+          <div className="bg-white shadow-lg rounded-lg p-6 text-center hover:shadow-xl transition duration-300">
+            <FaShoppingCart className="text-green-500 text-5xl mb-4 mx-auto" />
+            <h3 className="text-xl font-bold text-gray-800 mb-2">Sales</h3>
+            <p className="text-gray-600 mb-4">Track your sales and revenue in real-time.</p>
+            <a href="#" className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full transition duration-300">View Sales</a>
+          </div>
+        </section>
+      </main>
+
+      <footer className="bg-gray-900 text-white py-6 w-full">
+        <div className="container mx-auto text-center">
+          <p>&copy; 2024 DRM App. All rights reserved.</p>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default HomePage;
