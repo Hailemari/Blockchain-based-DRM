@@ -45,4 +45,5 @@ const useAuth = () => {
   return { ...authState, logout };
 };
 
+
 export default useAuth;

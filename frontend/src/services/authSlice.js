@@ -5,14 +5,14 @@ const initialState = {
 };
 
 export const authSlice = createSlice({
-  name: "auth",
+  name: "user",
   initialState,
   reducers: {
     setUser: (state, action) => {
       state.token = action.payload.token;
 
       localStorage.setItem("user", JSON.stringify({
-        token: action.payload.token
+        token: action.payload.token 
       }));
     },
   },

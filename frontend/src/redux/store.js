@@ -7,7 +7,6 @@ import authSlice from "../services/authSlice";
 import searchReducer from "../services/searchSlice";
 
 export const store = configureStore({
-
     reducer: {
         auth: authSlice,
         [authApi.reducerPath]: authApi.reducer,

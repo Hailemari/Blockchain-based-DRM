@@ -141,7 +141,7 @@ const AuthForm = ({ mode }) => {
         } else if (mode === 'signin' && loginError?.data?.message === 'Invalid email or password') {
           setAlert({ message: 'Invalid email or password. Please try again.', type: 'error' });
         } else {
-          setAlert({ message: `Could not ${mode}. Please try again later.`, type: 'error' });
+          setAlert({ message: `Could not ${mode}. Please try again later.`, type: 'error' ,error});
         }
       }
     },
@@ -341,7 +341,7 @@ const AuthForm = ({ mode }) => {
       {mode === 'signin' && (
         <div className="flex justify-end mt-4">
           <Link
-            to="/request-password-reset"
+            to="/reset-password"
             className="text-gray-700 hover:underline"
           >
             Forgot Password?

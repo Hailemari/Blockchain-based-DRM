@@ -15,14 +15,22 @@ const userSchema = new mongoose.Schema(
       unique: true,
       required: true,
     },
+    profile_pic: {
+      type: String,
+      required: false,
+    },
     password: {
       type: String,
       required: true,
     },
+    dob : {
+      type: Date,
+      required: false,
+    },
     userType: {
       type: String,
       enum: ["Creator", "Consumer", "Admin"],
-      required: true,
+      required: false,
     },
     googleId: {
       type: String,
