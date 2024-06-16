@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import Alert from './Alert';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { ClipLoader } from 'react-spinners';
 
 const signinContent = {
   linkUrl: '/register',
@@ -153,10 +154,9 @@ const AuthForm = ({ mode }) => {
           } else if (userType === 'Admin') {
             redirectPath = '/admin-dashboard';
           }
-          console.log('redirectPath', redirectPath);
-          setTimeout(() => {
-            navigate(redirectPath);
-          }, 500);
+          
+          navigate(redirectPath);
+         
         }
       } catch (e) {
         setLoading(false);
@@ -201,13 +201,19 @@ const AuthForm = ({ mode }) => {
   const content = mode === 'register' ? registerContent : signinContent;
 
   return (
-    <div className="max-w-lg mx-auto mt-10 p-8 bg-white rounded-lg shadow-md">
+    <div className="max-w-lg mx-auto mt-10 p-8 bg-white rounded-lg shadow-md relative">
+      {loading && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-white bg-opacity-75 z-10">
+          <ClipLoader size={60} color={"#10B981"} loading={loading} />
+          <p className="mt-4 text-green-600">Please wait...</p>
+        </div>
+      )}
       <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">
         {content.header}
       </h2>
       {alert.message && <Alert message={alert.message} type={alert.type} />}
       <p className="text-gray-600 mb-6 text-center">{content.subheader}</p>
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className={`space-y-6 ${loading ? 'pointer-events-none' : ''}`}>
         {mode === 'register' && (
           <>
             <div className="grid grid-cols-2 gap-4">
@@ -410,10 +416,10 @@ const AuthForm = ({ mode }) => {
 
         <button
           type="submit"
-          className="bg-green-600 text-white p-3 rounded hover:bg-green-700 transition w-full font-semibold"
+          className="bg-green-600 text-white p-3 rounded hover:bg-green-700 transition w-full font-semibold flex items-center justify-center"
           disabled={loading}
         >
-          {loading ? 'Loading...' : content.buttonText}
+          {content.buttonText}
         </button>
       </form>
       {errors.general && (

@@ -53,7 +53,6 @@ export const Header = () => {
               className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-none transition duration-300"
             >
               <FiUser className="text-xl text-gray-600" />
-              
             </button>
 
             {isOpen && (

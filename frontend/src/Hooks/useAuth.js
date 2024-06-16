@@ -21,7 +21,7 @@ const useAuth = () => {
           localStorage.removeItem('authToken');
           localStorage.removeItem('userType');
           setAuthState({ loading: false, userType: null });
-          navigate('/signin');
+          navigate('/');
         } else {
           setAuthState({ loading: false, userType });
         }

@@ -10,10 +10,13 @@ const AuthHandler = ({ children }) => {
 
   useEffect(() => {
     if (!loading) {
+      const path = location.pathname;
+      const publicPaths = ['/signin', '/register', '/request-password-reset', '/verify-otp', '/reset-password'];
+      const profilePaths = ['/update-profile'];
 
-      if (!userType) {
+      if (!userType && !publicPaths.includes(path)) {
         navigate('/signin', { replace: true });
-      } else if (userType) {
+      } else if (userType && publicPaths.includes(path)) {
         switch (userType) {
           case 'Creator':
             navigate('/creator_dashboard', { replace: true });
@@ -27,7 +30,21 @@ const AuthHandler = ({ children }) => {
           default:
             navigate('/signin', { replace: true });
         }
-      } 
+      } else if (userType && !profilePaths.includes(path)) {
+        switch (userType) {
+          case 'Creator':
+            navigate('/creator_dashboard', { replace: true });
+            break;
+          case 'Consumer':
+            navigate('/consumer_dashboard', { replace: true });
+            break;
+          case 'Admin':
+            navigate('/admin-dashboard', { replace: true });
+            break;
+          default:
+            navigate('/signin', { replace: true });
+        }
+      }
     }
   }, [loading, userType, navigate, location.pathname]);
 

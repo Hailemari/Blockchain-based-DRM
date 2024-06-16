@@ -8,7 +8,7 @@ router.post('/signup', authController.signup);
 router.post('/login', authController.login);
 router.get('/users', authController.getUsers);
 router.delete('/users/:userId', authController.removeUser);
-router.put('/update', authController.updateUser);
+router.put('/update-profile', authController.updateUser);
 
 
 

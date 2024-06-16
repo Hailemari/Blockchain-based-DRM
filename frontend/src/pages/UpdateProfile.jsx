@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { useUpdateProfileMutation } from '../services/authApi';
 import useAuth from '../Hooks/useAuth';
 
 const UpdateProfile = () => {
@@ -10,8 +10,10 @@ const UpdateProfile = () => {
     lastName: '',
     email: '',
   });
+  const [errors, setErrors] = useState({});
   const [alert, setAlert] = useState({ message: '', type: '' });
   const navigate = useNavigate();
+  const [updateProfile, { isLoading }] = useUpdateProfileMutation();
 
   useEffect(() => {
     if (user) {
@@ -31,21 +33,41 @@ const UpdateProfile = () => {
     }));
   };
 
+  const validateInputs = () => {
+    const newErrors = {};
+    if (!formState.firstName.trim()) {
+      newErrors.firstName = 'First Name is required';
+    }
+    if (!formState.lastName.trim()) {
+      newErrors.lastName = 'Last Name is required';
+    }
+    if (!formState.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formState.email)) {
+      newErrors.email = 'Invalid email format';
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateInputs()) {
+      return;
+    }
     try {
-      const token = localStorage.getItem('authToken');
-      const config = {
-        headers: { Authorization: `Bearer ${token}` }
-      };
-      const response = await axios.put('/api/users/update', formState, config);
+      await updateProfile(formState).unwrap();
       setAlert({ message: 'Profile updated successfully!', type: 'success' });
     } catch (error) {
-      setAlert({ message: 'Failed to update profile', type: 'error' });
+      if (error.status === 409) {
+        setAlert({ message: 'Email already exists. Please use a different email.', type: 'error' });
+      } else {
+        setAlert({ message: 'Failed to update profile', type: 'error' });
+      }
     }
   };
 
-  if (loading) {
+  if (loading || isLoading) {
     return <div>Loading...</div>;
   }
 
@@ -68,6 +90,9 @@ const UpdateProfile = () => {
               value={formState.firstName}
               onChange={handleChange}
             />
+            {errors.firstName && (
+              <p className="text-red-500 mt-2">{errors.firstName}</p>
+            )}
           </div>
           <div className="mb-4">
             <label className="block text-gray-700 font-medium">Last Name</label>
@@ -78,6 +103,9 @@ const UpdateProfile = () => {
               value={formState.lastName}
               onChange={handleChange}
             />
+            {errors.lastName && (
+              <p className="text-red-500 mt-2">{errors.lastName}</p>
+            )}
           </div>
         </div>
         <div className="mb-4">
@@ -88,8 +116,10 @@ const UpdateProfile = () => {
             className="mt-1 p-3 w-full border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
             value={formState.email}
             onChange={handleChange}
-            disabled
           />
+          {errors.email && (
+            <p className="text-red-500 mt-2">{errors.email}</p>
+          )}
         </div>
         <button
           type="submit"

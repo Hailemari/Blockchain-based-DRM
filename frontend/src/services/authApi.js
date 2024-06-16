@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-const BASE_URL = 'http://localhost:5000/';
+const BASE_URL = 'https://manage-content.onrender.com/';
 
 const baseQuery = fetchBaseQuery({
   baseUrl: BASE_URL,
@@ -49,6 +49,13 @@ export const authApi = createApi({
         method: 'POST',
       }),
     }),
+    updateProfile: builder.mutation({
+      query: (body) => ({
+        url: 'auth/update-profile',
+        method: 'PUT',
+        body,
+      }),
+    }),
   }),
 });
 
@@ -58,4 +65,5 @@ export const {
   useLogoutMutation,
   useGetUsersQuery,
   useRemoveUserMutation,
+  useUpdateProfileMutation,
 } = authApi;
