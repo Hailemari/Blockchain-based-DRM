@@ -7,7 +7,6 @@ const errorHandler = require('./utils/errorHandler');
 const fileRoutes = require('./routes/fileRoutes'); // Import file routes
 const adminRoutes = require('./routes/adminRoute');
 const process = require('process'); // Import the 'process' module
-
 dotenv.config();
 const app = express();
 

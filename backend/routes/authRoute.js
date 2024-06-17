@@ -8,8 +8,11 @@ router.post('/signup', authController.signup);
 router.post('/login', authController.login);
 router.get('/users', authController.getUsers);
 router.delete('/users/:userId', authController.removeUser);
-router.put('/update-profile', authController.updateUser);
+router.get('/profile',authMiddleware.authenticate, authController.getUser);
+router.put('/update-profile', authMiddleware.authenticate,authController.updateUser);
+router.post('/logout', authController.logout);
 
-
+router.post('/forgot-password', authController.forgotPassword);
+router.post('/reset-password/:resetToken', authController.resetPassword);
 
 module.exports = router;

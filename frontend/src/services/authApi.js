@@ -1,6 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-const BASE_URL = 'https://manage-content.onrender.com/';
+// const BASE_URL = 'https://manage-content.onrender.com/';
+const BASE_URL = 'http://localhost:5000/';
 
 const baseQuery = fetchBaseQuery({
   baseUrl: BASE_URL,
@@ -49,13 +50,44 @@ export const authApi = createApi({
         method: 'POST',
       }),
     }),
+    getUser: builder.query({
+      query: () => ({
+        url: 'auth/profile',
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      }),
+    }),
+
+
     updateProfile: builder.mutation({
       query: (body) => ({
         url: 'auth/update-profile',
         method: 'PUT',
         body,
+        Authorization : `Bearer ${localStorage.getItem('token')}`,
+
       }),
     }),
+
+
+    forgotPassword: builder.mutation({
+      query: (body) => ({
+        url: 'auth/forgot-password',
+        method: 'POST',
+        body,
+      }),
+    }),
+
+    resetPassword: builder.mutation({
+      query: (body) => ({
+        url: `auth/reset-password/${body.resetToken}`,
+        method: 'POST',
+        body,
+      }),
+    }),
+
   }),
 });
 
@@ -66,4 +98,8 @@ export const {
   useGetUsersQuery,
   useRemoveUserMutation,
   useUpdateProfileMutation,
+  useGetUserQuery,
+  useForgotPasswordMutation,
+  useResetPasswordMutation,
+  
 } = authApi;
