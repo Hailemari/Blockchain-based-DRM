@@ -20,7 +20,7 @@ const resetPasswordTemplate = (link) => {
                   <tr>
                     <td style="padding: 40px 0px 0px;">
                       <div style="text-align: left;">
-                        // <div style="padding-bottom: 20px;"><img src="https://firebasestorage.googleapis.com/v0/b/Blockchain-BasedDRM-391309.appspot.com/o/Blockchain Based DRM_Logo.png?alt=media&token=72ba5a55-864c-4efd-b428-53d0778bac12" alt="Company" style="width: 100px;"></div>
+                         <div style="padding-bottom: 20px;"><img src="https://drmuser-profile.s3.eu-north-1.amazonaws.com/Screenshot+from+2024-06-17+09-20-28.png" alt="Digital Right Management" style="width: 100px;"></div>
                       </div>
                       <div style="padding: 20px; background-color: rgb(255, 255, 255);">
                         <div style="color: rgb(0, 0, 0); text-align: left;">
