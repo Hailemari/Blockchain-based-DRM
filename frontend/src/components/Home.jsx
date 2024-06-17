@@ -23,25 +23,25 @@ const HomePage = () => {
         </section>
 
         <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white shadow-lg rounded-lg p-6 text-center hover:shadow-xl transition duration-300">
-            <FaTachometerAlt className="text-green-500 text-5xl mb-4 mx-auto" />
-            <h3 className="text-xl font-bold text-gray-800 mb-2">Dashboard</h3>
-            <p className="text-gray-600 mb-4">View your overall performance and statistics in one place.</p>
-            <a href="#" className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full transition duration-300">Go to Dashboard</a>
-          </div>
-
+        
           <div className="bg-white shadow-lg rounded-lg p-6 text-center hover:shadow-xl transition duration-300">
             <FaPlus className="text-green-500 text-5xl mb-4 mx-auto" />
             <h3 className="text-xl font-bold text-gray-800 mb-2">Manage Content</h3>
             <p className="text-gray-600 mb-4">Easily manage all your digital content in one place.</p>
-            <a href="#" className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full transition duration-300">Manage Content</a>
+            
+          </div>
+          <div className="bg-white shadow-lg rounded-lg p-6 text-center hover:shadow-xl transition duration-300">
+            <FaShoppingCart className="text-green-500 text-5xl mb-4 mx-auto" />
+            <h3 className="text-xl font-bold text-gray-800 mb-2">Buy Content</h3>
+            <p className="text-gray-600 mb-4">Purchase what you need directly from the creators</p>
+           
           </div>
 
           <div className="bg-white shadow-lg rounded-lg p-6 text-center hover:shadow-xl transition duration-300">
             <FaShoppingCart className="text-green-500 text-5xl mb-4 mx-auto" />
             <h3 className="text-xl font-bold text-gray-800 mb-2">Sales</h3>
             <p className="text-gray-600 mb-4">Track your sales and revenue in real-time.</p>
-            <a href="#" className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full transition duration-300">View Sales</a>
+           
           </div>
         </section>
       </main>

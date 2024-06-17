@@ -59,7 +59,7 @@ const AdminDashboard = () => {
         setRejectedContents(contents);
       }
     } catch (error) {
-      console.error(`Error fetching ${activeTab} contents:`, error);
+      console.error(`Cannot fetching ${activeTab} contents:`, error);
     } finally {
       setIsLoading(false);
     }
@@ -78,7 +78,7 @@ const AdminDashboard = () => {
       toast.success('Content approved successfully!');
     } catch (error) {
       console.error('Error approving content:', error);
-      toast.error('Error approving content. Please try again.');
+      toast.error('You approving content. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -92,7 +92,7 @@ const AdminDashboard = () => {
       toast.success('Content rejected successfully!');
     } catch (error) {
       console.error('Error rejecting content:', error);
-      toast.error('Error rejecting content. Please try again.');
+      toast.error('You rejecting content. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -107,8 +107,8 @@ const AdminDashboard = () => {
       const objectUrl = URL.createObjectURL(blob);
       setContentObjectUrl(objectUrl);
     } catch (error) {
-      console.error('Error fetching content from IPFS:', error);
-      toast.error('Error fetching content. Please try again.');
+      console.error('Cannot fetching content from IPFS:', error);
+      toast.error('Cannot fetching content. Please try again.');
     } finally {
       setIsLoading(false);
     }

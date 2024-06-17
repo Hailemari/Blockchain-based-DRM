@@ -63,7 +63,7 @@ export const Header = () => {
                     className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 transition duration-300"
                     onClick={handleSettings}
                   >
-                    Settings
+                    update-profile
                   </button>
                   <button
                     type="button"

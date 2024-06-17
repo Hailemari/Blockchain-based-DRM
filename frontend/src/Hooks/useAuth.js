@@ -3,7 +3,7 @@ import { jwtDecode } from "jwt-decode"
 import { useNavigate } from 'react-router-dom';
 
 const useAuth = () => {
-  const [authState, setAuthState] = useState({ loading: true, userType: null });
+  const [authState, setAuthState] = useState({ loading: true, userType: null, user: null });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -11,25 +11,26 @@ const useAuth = () => {
     const userType = localStorage.getItem('userType');
 
     if (!token || !userType) {
-      setAuthState({ loading: false, userType: null });
+      setAuthState({ loading: false, userType: null, user: null });
     } else {
       try {
         const decodedToken = jwtDecode(token); 
+        console.log('decoded token', decodedToken)
         const currentTime = Date.now() / 1000;
 
         if (decodedToken.exp < currentTime) {
           localStorage.removeItem('authToken');
           localStorage.removeItem('userType');
-          setAuthState({ loading: false, userType: null });
+          setAuthState({ loading: false, userType: null, user: null });
           navigate('/');
         } else {
-          setAuthState({ loading: false, userType });
+          setAuthState({ loading: false, userType, user: decodedToken.user });
         }
       } catch (error) {
         // Invalid token
         localStorage.removeItem('authToken');
         localStorage.removeItem('userType');
-        setAuthState({ loading: false, userType: null });
+        setAuthState({ loading: false, userType: null, user: null });
         navigate('/signin');
       }
     }
@@ -38,7 +39,7 @@ const useAuth = () => {
   const logout = () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('userType');
-    setAuthState({ loading: false, userType: null });
+    setAuthState({ loading: false, userType: null, user: null });
     navigate('/signin');
   };
 
@@ -46,3 +47,6 @@ const useAuth = () => {
 };
 
 export default useAuth;
+
+
+

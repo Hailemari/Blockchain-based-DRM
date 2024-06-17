@@ -341,6 +341,7 @@ export const fetchSalesData = async (creatorAddress) => {
       creator: event.args.creator,
       ipfsHash: event.args.ipfsHash,
       price: ethers.utils.formatEther(event.args.price),
+      
     };
   });
 

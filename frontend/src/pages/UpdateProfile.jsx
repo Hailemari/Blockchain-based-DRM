@@ -82,7 +82,7 @@ const UpdateProfile = () => {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-2 gap-4">
           <div className="mb-4">
-            <label className="block text-gray-700 font-medium">First Name</label>
+            <label className="block text-gray-700 font-medium">New First Name</label>
             <input
               type="text"
               name="firstName"
@@ -95,7 +95,7 @@ const UpdateProfile = () => {
             )}
           </div>
           <div className="mb-4">
-            <label className="block text-gray-700 font-medium">Last Name</label>
+            <label className="block text-gray-700 font-medium">New Last Name</label>
             <input
               type="text"
               name="lastName"
@@ -109,7 +109,7 @@ const UpdateProfile = () => {
           </div>
         </div>
         <div className="mb-4">
-          <label className="block text-gray-700 font-medium">Email</label>
+          <label className="block text-gray-700 font-medium">New Email</label>
           <input
             type="email"
             name="email"

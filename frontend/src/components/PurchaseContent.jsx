@@ -237,7 +237,7 @@ const PurchaseContent = () => {
         toast.error('You have already purchased this content.');
         setPurchasedContents(new Set([...purchasedContents, contentId]));
       } else {
-        toast.error('Error purchasing content');
+        toast.error('Cannot purchase content');
       }
       console.error('Error purchasing content:', error);
     } finally {

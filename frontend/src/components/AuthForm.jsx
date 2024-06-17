@@ -136,7 +136,7 @@ const AuthForm = ({ mode }) => {
           console.log('redirectPath', redirectPath);
           setTimeout(() => {
             navigate(redirectPath);
-          }, 500);
+          }, 5);
         } else {
           const result = await login(formState).unwrap();
           const { token, userType } = result;

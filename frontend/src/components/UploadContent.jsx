@@ -357,113 +357,113 @@ const UploadContent = () => {
                   </div>
                 ) : activeTab === 'upload' ? (
                   <div className="max-w-lg mx-auto bg-white shadow-lg rounded-lg px-8 pt-6 pb-8 mb-4">
-  <h2 className="text-3xl mb-8 font-bold text-center text-gray-800">Upload Content</h2>
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <div className="mb-6">
-      <label className="block text-gray-700 text-lg font-semibold mb-2" htmlFor="title">
-        Title
-      </label>
-      <input
-        className="shadow-md appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-        id="title"
-        type="text"
-        placeholder="Title"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-      />
-      {validationErrors.title && <p className="text-red-500 text-sm italic mt-2">{validationErrors.title}</p>}
-    </div>
-    <div className="mb-6">
-      <label className="block text-gray-700 text-lg font-semibold mb-2" htmlFor="price">
-        Price
-      </label>
-      <input
-        className="shadow-md appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-        id="price"
-        type="text"
-        placeholder="Price in ETH"
-        value={price}
-        onChange={(e) => setPrice(e.target.value)}
-      />
-      {validationErrors.price && <p className="text-red-500 text-sm italic mt-2">{validationErrors.price}</p>}
-    </div>
-  </div>
-  <div className="mb-6">
-    <label className="block text-gray-700 text-lg font-semibold mb-2" htmlFor="description">
-      Description
-    </label>
-    <textarea
-      className="shadow-md appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-      id="description"
-      placeholder="Description"
-      value={description}
-      onChange={(e) => setDescription(e.target.value)}
-    ></textarea>
-    {validationErrors.description && <p className="text-red-500 text-sm italic mt-2">{validationErrors.description}</p>}
-  </div>
-  <div className="mb-6">
-    <label className="block text-gray-700 text-lg font-semibold mb-2" htmlFor="file">
-      File
-    </label>
-    <input
-      className="shadow-md appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-      id="file"
-      type="file"
-      onChange={handleFileChange}
-    />
-    {validationErrors.file && <p className="text-red-500 text-sm italic mt-2">{validationErrors.file}</p>}
-  </div>
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <div className="mb-6">
-      <label className="block text-gray-700 text-lg font-semibold mb-2">
-        Content Type
-      </label>
-      <select
-        className="shadow-md appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-        value={contentType}
-        onChange={(e) => setContentType(e.target.value)}
-      >
-        <option value="0">Ebook</option>
-        <option value="1">Video</option>
-        <option value="2">Music</option>
-      </select>
-    </div>
-    <div className="mb-6">
-      <label className="block text-gray-700 text-lg font-semibold mb-2">
-        Permissions
-      </label>
-      <div className="flex items-center mb-3">
-        <input
-          type="checkbox"
-          id="viewOnly"
-          checked={viewOnly}
-          onChange={(e) => setViewOnly(e.target.checked)}
-          className="mr-3"
-        />
-        <label htmlFor="viewOnly" className="text-gray-700">View</label>
-      </div>
-      <div className="flex items-center mb-3">
-        <input
-          type="checkbox"
-          id="download"
-          checked={download}
-          onChange={(e) => setDownload(e.target.checked)}
-          className="mr-3"
-        />
-        <label htmlFor="download" className="text-gray-700">Download</label>
-      </div>
-    </div>
-  </div>
-  <div className="flex items-center justify-between">
-    <button
-      className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg focus:outline-none focus:shadow-outline transition duration-300 transform hover:scale-105"
-      type="button"
-      onClick={handleUpload}
-    >
-      Upload
-    </button>
-  </div>
-</div>
+                <h2 className="text-3xl mb-8 font-bold text-center text-gray-800">Upload Content</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="mb-6">
+                    <label className="block text-gray-700 text-lg font-semibold mb-2" htmlFor="title">
+                      Title
+                    </label>
+                    <input
+                      className="shadow-md appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                      id="title"
+                      type="text"
+                      placeholder="Title"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                    />
+                    {validationErrors.title && <p className="text-red-500 text-sm italic mt-2">{validationErrors.title}</p>}
+                  </div>
+                  <div className="mb-6">
+                    <label className="block text-gray-700 text-lg font-semibold mb-2" htmlFor="price">
+                      Price
+                    </label>
+                    <input
+                      className="shadow-md appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                      id="price"
+                      type="text"
+                      placeholder="Price in ETH"
+                      value={price}
+                      onChange={(e) => setPrice(e.target.value)}
+                    />
+                    {validationErrors.price && <p className="text-red-500 text-sm italic mt-2">{validationErrors.price}</p>}
+                  </div>
+                </div>
+                <div className="mb-6">
+                  <label className="block text-gray-700 text-lg font-semibold mb-2" htmlFor="description">
+                    Description
+                  </label>
+                  <textarea
+                    className="shadow-md appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    id="description"
+                    placeholder="Description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                  ></textarea>
+                  {validationErrors.description && <p className="text-red-500 text-sm italic mt-2">{validationErrors.description}</p>}
+                </div>
+                <div className="mb-6">
+                  <label className="block text-gray-700 text-lg font-semibold mb-2" htmlFor="file">
+                    File
+                  </label>
+                  <input
+                    className="shadow-md appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    id="file"
+                    type="file"
+                    onChange={handleFileChange}
+                  />
+                  {validationErrors.file && <p className="text-red-500 text-sm italic mt-2">{validationErrors.file}</p>}
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="mb-6">
+                    <label className="block text-gray-700 text-lg font-semibold mb-2">
+                      Content Type
+                    </label>
+                    <select
+                      className="shadow-md appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                      value={contentType}
+                      onChange={(e) => setContentType(e.target.value)}
+                    >
+                      <option value="0">Ebook</option>
+                      <option value="1">Video</option>
+                      <option value="2">Music</option>
+                    </select>
+                  </div>
+                  <div className="mb-6">
+                    <label className="block text-gray-700 text-lg font-semibold mb-2">
+                      Permissions
+                    </label>
+                    <div className="flex items-center mb-3">
+                      <input
+                        type="checkbox"
+                        id="viewOnly"
+                        checked={viewOnly}
+                        onChange={(e) => setViewOnly(e.target.checked)}
+                        className="mr-3"
+                      />
+                      <label htmlFor="viewOnly" className="text-gray-700">View</label>
+                    </div>
+                    <div className="flex items-center mb-3">
+                      <input
+                        type="checkbox"
+                        id="download"
+                        checked={download}
+                        onChange={(e) => setDownload(e.target.checked)}
+                        className="mr-3"
+                      />
+                      <label htmlFor="download" className="text-gray-700">Download</label>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <button
+                    className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg focus:outline-none focus:shadow-outline transition duration-300 transform hover:scale-105"
+                    type="button"
+                    onClick={handleUpload}
+                  >
+                    Upload
+                  </button>
+                </div>
+              </div>
 
                 ) : activeTab === 'dashboard' ? (
                   <DisplayContents contents={filteredContents} />
@@ -475,32 +475,7 @@ const UploadContent = () => {
                         <h3 className="text-xl mt-4 md:mt-0 font-semibold">Total Income: <span className="text-green-600">{salesData.totalIncome} ETH</span></h3>
                       </div>
                       
-                      <div className="flex justify-center mb-8 flex-wrap">
-                        <button
-                          className={`px-5 py-2 m-2 rounded-full ${activeSalesTab === 'all' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-800'} transition duration-300 transform hover:scale-105`}
-                          onClick={() => handleSalesTabChange('all')}
-                        >
-                          All
-                        </button>
-                        <button
-                          className={`px-5 py-2 m-2 rounded-full ${activeSalesTab === '0' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-800'} transition duration-300 transform hover:scale-105`}
-                          onClick={() => handleSalesTabChange('0')}
-                        >
-                          Ebooks
-                        </button>
-                        <button
-                          className={`px-5 py-2 m-2 rounded-full ${activeSalesTab === '1' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-800'} transition duration-300 transform hover:scale-105`}
-                          onClick={() => handleSalesTabChange('1')}
-                        >
-                          Videos
-                        </button>
-                        <button
-                          className={`px-5 py-2 m-2 rounded-full ${activeSalesTab === '2' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-800'} transition duration-300 transform hover:scale-105`}
-                          onClick={() => handleSalesTabChange('2')}
-                        >
-                          Music
-                        </button>
-                      </div>
+                      
                       
                       <div>
                         <h3 className="text-2xl font-semibold mb-6">Sold Contents</h3>
