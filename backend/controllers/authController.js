@@ -75,10 +75,42 @@ exports.removeUser = async (req, res, next) => {
 
 
 exports.updateUser = async (req, res) => {
+  console.log('new request');
+
+  // Extract the Authorization header
+  const authHeader = req.header('Authorization');
+
+  if (!authHeader) {
+    return res.status(401).json({ message: 'Authorization header missing' });
+  }
+
+  // Verify that the Authorization header follows the 'Bearer <token>' format
+  const tokenMatch = authHeader.match(/^Bearer\s+(\S+)$/);
+
+  if (!tokenMatch) {
+    return res.status(401).json({ message: 'Invalid Authorization header format' });
+  }
+
+  // Extract the token from the match
+  const token = tokenMatch[1];
+
+  let userId;
+  try {
+    // Verify the token
+    console.log(config.secretKey)
+    const decoded = jwt.verify(token, 'usmael'); // Use the secret key from config
+    console.log('Decoded:', decoded);
+    userId = decoded.userId; // Extract the userId from the decoded token
+  } catch (err) {
+    console.error('Token verification failed:', err);
+    return res.status(401).json({ message: 'Token is not valid' });
+  }
+
   const { firstName, lastName, email } = req.body;
 
   try {
-    const user = await User.findOne(email);
+    const user = await User.findById(userId);
+    console.log('User found:', user);
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
@@ -99,9 +131,10 @@ exports.updateUser = async (req, res) => {
     // Save the updated user
     await user.save();
 
-    res.json({ message: 'Profile updated successfully', user });
+    console.log('User updated:', user);
+    return res.json({ message: 'Profile updated successfully', user });
   } catch (error) {
     console.error('Error updating profile:', error);
-    res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'Server error' });
   }
 };
