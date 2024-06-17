@@ -11,7 +11,7 @@ const AuthHandler = ({ children }) => {
   useEffect(() => {
     if (!loading) {
       const path = location.pathname;
-      const publicPaths = ['/signin', '/register', '/request-password-reset', '/verify-otp', '/reset-password'];
+      const publicPaths = ['/signin', '/register', '/forgot-password', '/verify-otp', '/passwordreset'];
       const profilePaths = ['/update-profile'];
 
       if (!userType && !publicPaths.includes(path)) {
